@@ -1,0 +1,1244 @@
+
+// - - - Dynamics - - -
+defaultTile(default_tile) {
+	uniqueId=0;
+	drawCategory=OBJ;
+	mainLayer=1;
+	type=Dynamic;
+	material=default;
+	material.blockExplosions=false;
+	fixture() { collisionGroup=dynamics_g1; collisionPoints=null; blockFire=false; }
+	colorPalette=palNone;
+	projectileHit=true;
+	absorbProjectile=true;
+	objectStrength=0.0;
+	isCloud=false;
+	life=0.0;
+	editorEnabled=true;
+	kickable=true;
+	punchable=true;
+	doTakeDamage.fire=false;
+}
+
+tile(AcidVat00Top){ type=Static; material=metal; drawCategory=SLD; projectileHit=false;
+	fixture(){  collisionGroup=none; } //collisionPoints=(-32,-4),(-26,-4),(-26,-2),(-32,-2); }
+	//fixture(r){ collisionGroup=none; collisionPoints=(26,-4),(32,-4),(32,-2),(26,-2); }
+}
+tile(AcidVat00A){ type=Static; material=metal; drawCategory=FG; projectileHit=false;
+	animation(AcidVat00A){ width=64; frameTime=100; }
+	fixture(){  collisionGroup=static_ground; projectileHit=true; blockFire=true; collisionPoints=(-32,-12),(-24,-12),(-24,4),(-32,4); }
+	fixture(r){ collisionGroup=static_ground; projectileHit=true; blockFire=true; collisionPoints=(24,-12),(32,-12),(32,4),(24,4); }
+}
+tile(AcidVat00B){ type=Static; material=metal; drawCategory=FG; sizeable=V; fixture(){ collisionGroup=static_ground; blockFire=true; }}
+tile(AcidVat00C){ type=Static; material=metal; drawCategory=FG; sizeable=V; fixture(){ collisionGroup=static_ground; blockFire=true; }}
+
+tile(AerialBomb00){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	fixture(){ collisionGroup=static_ground; collisionPoints=(-6.5,-23.5),(6.5,-23.5),(6.5,23.5),(-6.5,23.5); }}
+
+//Activators
+tile(AmmoStash00){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(AmmoStash00){ width=16; frameTimes=0; }
+	fixture(){ collisionGroup=none; }}
+
+tile(Button00){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(Button00){ width=8; frameTimes=0; }
+	fixture(){ collisionGroup=none; }}
+tile(Button01){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(Button01){ width=8; frameTimes=0; }
+	fixture(){ collisionGroup=none; }}
+tile(ButtonPole00){ drawCategory=SLD; sizeable=V; type=Static; projectileHit=false; colorPalette=BG; punchable=false; kickable=false; fixture(){ collisionGroup=none; } }
+
+tile(EditorTestButton00){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(EditorTestButton00){ width=8; frameTimes=0; }
+	fixture(){ collisionGroup=none; }}
+	
+tile(Lever00){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(Lever00){ width=8; frameTimes=0; } 
+	fixture(){ collisionGroup=none; }}
+tile(Lever01){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(Lever01){ width=16; frameTimes=0; } 
+	fixture(){ collisionGroup=none; }}
+
+tile(MedicalCabinet00){ type=Static; drawCategory=SLD; projectileHit=false; colorPalette=BG; punchable=false; kickable=false;
+	animation(MedicalCabinet00){ width=16; frameTimes=0; }
+	fixture(){ collisionGroup=none; }}
+
+Tile(AtlasStatue00){ drawCategory=SLD; material=Stone; type=Static; life=125; material.blockExplosions=true; clientSync.ECODBPI=true; 
+fixture(){ collisionGroup=static_ground; blockFire=true; collisionPoints=(-20,-4),(-16,-8),(16,-8),(20,-4),(16,4),(-16,4); }
+fixture(a){ collisionGroup=static_ground; blockFire=true; circle=(0,16,20);  }
+}
+Tile(AtlasStatue00_D){ drawCategory=SLD; material=Stone; type=Static; projectileHit=false; material.blockExplosions=false; clientSync.ECODBPI=true; fixture(){ collisionGroup=none; blockFire=false; }}
+Tile(AtlasStatue00Globe){ material=Stone; type=Dynamic; clientSync.ECODBPI=true; fixture(){ collisionGroup=dynamics_g1; circle=(0,0,20); mass=300kg; blockFire=true; }}
+	
+tile(Balloon00) { gibpressure.total=400kg; gibpressure.spike=1600kg; colorPalette=BG; material=balloon; material.resistance.impact.threshold=9; life=1; absorbProjectile=false; doTakeDamage.fire=true; fixture(){ collisionGroup=none; circle=(0,2,5); } fixture(B){ collisionGroup=none; circle=(0,-2,4); } }
+tile(Balloon00_D) { gibpressure.total=400kg; gibpressure.spike=1600kg; colorPalette=BG; material=balloon; material.resistance.impact.threshold=0; material.restitution=0.1; material.friction=0.7; life=20;  doTakeDamage.fire=true; kickable=false; punchable=false; projectileHit=false; absorbProjectile=false; fixture(){ collisionGroup=dynamics_thrown; collisionPoints=(-5,-1),(5,-1),(5,1),(-5,1); } } 
+
+tile(BambooScaffold00A){ type=Static; life=75; kickable=false; punchable=false; material=wood; material.flammable=false; projectileHit=false; doTakeDamage.fire=false; sizeable=V; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture() { collisionGroup=none; }}
+tile(BambooScaffold00B){ type=Static; life=75; kickable=false; punchable=false; material=wood; material.flammable=true; projectileHit=false; doTakeDamage.fire=true; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture() { collisionGroup=none; }}
+tile(BambooScaffold00C){ type=Static; life=75; kickable=false; punchable=false; material=wood; material.flammable=true; projectileHit=false; doTakeDamage.fire=true; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture() { collisionGroup=none; }}
+tile(BambooScaffold00D){ type=Static; life=75; kickable=false; punchable=false; material=wood; material.flammable=true; projectileHit=false; doTakeDamage.fire=true; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture() { collisionGroup=none; }}
+
+tile(BambooStick00A){
+	canBeMissile=true;
+	gibpressure.total=400kg;
+	gibpressure.spike=1600kg;
+	material=wood;
+	material.flammable=true;
+	life=100000;
+	absorbProjectile=true;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	doTakeDamage.fire=true;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture(){ collisionGroup=dynamics_g2; blockFire=false; mass=8kg; collisionPoints=(-1.5,-7),(1.5,-7.5),(1.5,6.5),(-1.5,7.5); } }
+
+tile(BambooStick00B){
+	canBeMissile=true;
+	gibpressure.total=4000kg;
+	gibpressure.spike=16000kg;
+	material=wood;
+	material.flammable=true;
+	life=100000;
+	absorbProjectile=true;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	doTakeDamage.fire=true;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture(){ collisionGroup=dynamics_g2; blockFire=false; mass=4.5kg; collisionPoints=(-1.5,-11),(1.5,-11.5),(1.5,10.5),(-1.5,11.5); } }
+tile(BambooStick00C){ gibpressure.total=400kg; gibpressure.spike=1600kg; material=wood; material.flammable=true; life=100; absorbProjectile=false; material.destroySound=DestroySmall; material.blockExplosions=false; doTakeDamage.fire=true; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ collisionGroup=debris; blockFire=false; mass=10kg; collisionPoints=(-1.5,-15),(1.5,-15.5),(1.5,14.5),(-1.5,15.5); } }
+tile(BambooStick00D){ gibpressure.total=400kg; gibpressure.spike=1600kg; material=wood; material.flammable=true; life=100; absorbProjectile=false; material.destroySound=DestroySmall; material.blockExplosions=false; doTakeDamage.fire=true; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ collisionGroup=debris; blockFire=false; mass=14kg; collisionPoints=(-1.5,-23),(1.5,-23.5),(1.5,22.5),(-1.5,23.5); } }
+
+tile(Barrel00){
+	adpnc=true; 
+	life=200; 
+	gibpressure.total=400kg; 
+	gibpressure.spike=1600kg; 
+	material=metal; 
+	material.blockExplosions=false; 
+	clientSync.DAPCC=true; 
+	fixture(){ mass=60kg; collisionPoints=(-5.5,-7.5),(5.5,-7.5),(5.5,7.5),(-5.5,7.5); }}
+tile(BarrelExplosive){ adpnc=true; objectStrength=0.0; gibpressure.spike=1600kg; material=metal; material.blockExplosions=false; material.Resistance.Impact.Modifier=0; doTakeDamage.fire=true; material.flammable=true; life=10; clientSync.ECODBPI=true; clientSync.DAPCC=true; fixture(){ mass=60kg; collisionPoints=(-5.5,-7.5),(5.5,-7.5),(5.5,7.5),(-5.5,7.5); }}
+tile(BarrelWreck){ gibpressure.total=400kg; gibpressure.spike=1600kg; material=metal; material.blockExplosions=false; absorbProjectile=true; material.flammable=true; life=1; clientSync.ECODBPI=true; clientSync.DAPCC=true; fixture(){mass=60kg;} }
+
+Tile(Baseball) {
+	 absorbProjectile=true;
+	 projectileHit=true;
+	 drawCategory=ITM;
+	 material=cloth;
+	 material.blockExplosions=false;
+	 material.hit.melee.sound=Baseball;
+	 material.hit.melee.effect=HIT;
+	 material.resistance.impact.modifier=0.0;
+	 material.restitution = 1;
+	 gibpressure.total=125kg;
+	 gibpressure.spike=800kg; 
+	 kickable=true;
+	 punchable=true;
+	 impactSound=Baseball;
+	 pickupType=instant;
+	 pickupRange=8.0; 
+	 canBeMissile=true; 
+	 missileDamageMax=6.5; 
+	 type=Dynamic; fixture() { mass=5kg; collisionGroup=dynamics_thrown; circle=(-0.5,0.5,2); blockFire=false; }} //collisionPoints=(-1.5,-1),(-1,-1.5),(1,-1.5),(1.5,-1),(1.5,1),(1,1.5),(-1,1.5),(-1.5,1); }}
+
+tile(BigMachine00A){ type=Static; colorPalette=Metal; material=metal; drawCategory=FG;
+	fixture(){ collisionGroup=static_ground; collisionPoints=(-24,-32),(-16,-32),(-16,28),(-24,28); }
+	fixture(r){ collisionGroup=static_ground; collisionPoints=(16,-32),(24,-32),(24,28),(16,28); }
+}
+tile(BigMachine00Top){ type=Static; colorPalette=Metal; drawCategory=SLD; projectileHit=false;
+	fixture(){ collisionGroup=none; }
+}
+
+tile(BlastDoor00A){ drawCategory=SLD; material.blockExplosions=true; material=metal; punchable=false; kickable=false; fixture(){ collisionGroup=static_ground; blockFire=true; }} //collisionPoints=(-5.5,-15.5),(5.5,-15.5),(5.5,15.5),(-5.5,15.5); mass=500kg; } }
+tile(BlastDoor00B){ drawCategory=SLD; material.blockExplosions=true; sizeable=V; material=metal; punchable=false; kickable=false; fixture(){ collisionGroup=static_ground; blockFire=true; }} //collisionPoints=(-5.5,-19.5),(5.5,-19.5),(5.5,19.5),(-5.5,19.5); mass=600kg; } }
+tile(BlastDoor00C){ drawCategory=SLD; material.blockExplosions=true; material=metal; punchable=false; kickable=false; fixture(){ collisionGroup=static_ground; blockFire=true; }} //collisionPoints=(-5.5,-23.5),(5.5,-23.5),(5.5,23.5),(-5.5,23.5); mass=700kg; } }
+tile(BlastDoor01A){ drawCategory=SLD; material.blockExplosions=true; colorPalette=Metal; sizeable=V; material=metal; punchable=true; kickable=true; fixture(){ collisionGroup=static_ground; blockFire=true; }} //collisionPoints=(-5.5,-15.5),(5.5,-15.5),(5.5,15.5),(-5.5,15.5); mass=500kg; } }
+
+tile(Bottle00){ absorbProjectile=false; canBeMissile=true; missileDamageMax=10; life=5; punchable=false; kickable=false; pickupType=instant; pickupRange=10.0; drawCategory=ITM; gibpressure.total=40kg; gibpressure.spike=160kg; material=glass; material.blockExplosions=false; doTakeDamage.fire=true; ImpactEffect=ImpactDefault; ImpactSound=ImpactGlass; fixture(){ mass=5kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(0,4.5),(-2,1.5),(-2,-4.5),(2,-4.5),(2,1.5); } }
+tile(Bottle00Broken){ absorbProjectile=false; canBeMissile=true; missileDamageMax=14; MissileThrownHitEffectID=HIT_S; MissileThrownHitSoundID=MeleeHitSharp; MissileDamageFactorThrown=6; life=5; punchable=false; kickable=false; pickupType=instant; pickupRange=10.0; drawCategory=ITM; gibpressure.total=40kg; gibpressure.spike=160kg; material=glass; material.blockExplosions=false; doTakeDamage.fire=true; ImpactEffect=ImpactDefault; ImpactSound=ImpactGlass; fixture(){ mass=5kg; collisionGroup=debris; blockFire=false; collisionPoints=(0,4),(-2,1),(0,-4),(2,1); } }
+
+tile(BridgePlank00){ material=wood; life=75; doTakeDamage.fire=true; material.flammable=true; fixture(){ blockFire=true; }}
+tile(BridgePlank01){ material=wood; life=75; doTakeDamage.fire=true; material.flammable=true; type=Static; fixture(){ blockFire=true; } }
+
+tile(Camera00){ drawCategory=SLD; life=50; canBeMissile=true; missileMarkAsHeavyDebris=true; material=metal; material.blockExplosions=false; gibpressure.total=40kg; gibpressure.spike=160kg; absorbProjectile=false; ImpactEffect=ImpactDefault; ImpactSound=ImpactMetal;
+	fixture(){ mass=20kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-4, -6),(4,-6),(4,6),(-4,6); }
+	animation(Camera00){ width=24; frameTime=400; }}
+tile(Camera00_D){ drawCategory=SLD; life=50; canBeMissile=true; missileMarkAsHeavyDebris=true; material=metal; material.blockExplosions=false; gibpressure.total=40kg; gibpressure.spike=160kg; absorbProjectile=false; ImpactEffect=ImpactDefault; ImpactSound=ImpactMetal;
+	fixture(){ mass=20kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-4, -6),(4,-6),(4,6),(-4,6); } }
+
+tile(Computer00){ life=50; canBeMissile=true; missileMarkAsHeavyDebris=true; absorbProjectile=false; material=Metal; gibpressure.total=40kg; gibpressure.spike=160kg; ImpactEffect=ImpactDefault; ImpactSound=ImpactMetal;
+	fixture(){ mass=5kg; collisionGroup=debris; collisionPoints=(-3.5,-5.5),(3.5,-5.5),(3.5,5.5),(-3.5,5.5); } }
+		
+//createexplosivecutcontent
+tile(DeadMeat00){ material=flesh; life=150; material.resistance.impact.modifier=0;  fixture(){ collisionGroup=dynamics_g1; collisionPoints=(-7,-9),(7,-9),(7,8),(-7,8); } }
+tile(DeadMeat00_D){ material=flesh; projectileHit=false; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-6,-9),(6,-9),(6,8),(-6,8); } }
+
+tile(Dumpster00){ colorPalette=Metal; material=metal; fixture(){ collisionGroup=static_ground; collisionPoints=(-15.5,-15.5),(15.5,-15.5),(15.5,3.5),(-15.5,11.5); } }
+
+tile(MeatHook00){ material=metal; absorbProjectile=false; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-2.5,-5.5),(2.5,-5.5),(2.5,5.5),(-2.5,5.5); mass=100kg; blockFire=false; } }
+
+tile(MetalBucket00){
+	material.hit.kick.power=3;
+	life=100000;
+	projectileHit=true;
+	objectStrength=10.0;
+	canBeMissile=true;
+	missileDamageMax=15|80;
+	objectStrength=100;
+	missileMarkAsHeavyDebris=true;
+	material=metal;
+	material.blockExplosions=false;
+	gibpressure.total=10kg;
+	gibpressure.spike=40kg;
+	Material.Resistance.Impact.Threshold=999999;
+	absorbProjectile=true;
+	ImpactEffect=ImpactDefault;
+	ImpactSound=ImpactMetal;
+	fixture(){ mass=5kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-4.5,-4.5),(4.5,-4.5),(4.5,4.5),(-4.5,4.5); mass=0.1kg; } }
+
+tile(Monitor00){
+	material=metal;
+	canBeMissile=true;
+	missileMarkAsHeavyDebris=true;
+	life=200;
+	gibpressure.total=20kg;
+	gibpressure.spike=80kg;
+	absorbProjectile=true;
+	doTakeDamage.fire=true;
+	material.blockExplosions=false;
+	ImpactEffect=ImpactDefault;
+	ImpactSound=ImpactMetal; 
+	fixture(){ mass=1.5kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-5.5,-3.5),(5.5,-3.5),(5.5,5.5),(-5.5,5.5); }
+	fixture(b){ mass=1.5kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-2,-5.5),(2,-5.5),(2,0),(-2,0); }
+	animation(Monitor00){ width=12; frameTime=250; } }
+
+tile(Monitor00_D){
+	life=100;
+	canBeMissile=true;
+	missileMarkAsHeavyDebris=true;
+	absorbProjectile=true;
+	material=Metal;
+	gibpressure.total=20kg;
+	gibpressure.spike=80kg;
+	ImpactEffect=ImpactDefault;
+	ImpactSound=ImpactMetal; 
+	fixture(){ mass=3kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-5.5,-3.5),(5.5,-3.5),(5.5,5.5),(-5.5,5.5); }
+	fixture(b){ mass=3kg; collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-2,-5.5),(2,-5.5),(2,0),(-2,0); }}
+	
+tile(CannonTurret00A){ material=metal; colorPalette=Metal; drawCategory=FG; material.blockExplosions=true; 
+	fixture(){ collisionGroup=static_ground; collisionPoints=(-12,-12),(0,-12),(8,-4),(8,4),(0,12),(-12,12); } }
+
+tile(CannonTurret00B){ material=metal; colorPalette=Metal; drawCategory=SLD; material.blockExplosions=false; fixture(){ projectileHit=false; blockFire=false; collisionGroup=none; } }
+
+tile(CannonTurret00Barrel){ material=metal; colorPalette=Metal; drawCategory=FG; material.blockExplosions=true; 
+	fixture(){ collisionGroup=static_ground; collisionPoints=(-20,3),(16,3),(16,4.5),(-20,4.5); }
+	fixture(b){ collisionGroup=static_ground; collisionPoints=(-20,-4.5),(16,-4.5),(16,-3),(-20,-3); } }
+
+tile(CannonTurret00Barrel_D){ material=metal; colorPalette=Metal; material.blockExplosions=true; 
+	fixture(){ collisionGroup=static_ground; collisionPoints=(-13.5,-4.5),(13.5,-4.5),(13.5,4.5),(-13.5,4.5); } }
+
+tile(CannonTurret00BarrelB){ material=metal; colorPalette=Metal; drawCategory=SLD; material.blockExplosions=false; fixture(){ projectileHit=false; blockFire=false; collisionGroup=none; } }
+
+tile(Car00A){ material=Metal;  InstaGibPlayer=true; 
+	fixture(){ blockFire=true; collisionGroup=static_ground; collisionPoints=(-17.5,-10.5),(17.5,-10.5),(17.5,1.5),(-17.5,1.5); mass=300kg; }
+	fixture(roof){ material=Glass; collisionGroup=static_ground; absorbProjectile=false; collisionPoints=(-13.5,1.5),(13.5,1.5),(9.5,10.5),(-9.5,10.5); mass=100kg; }
+}
+tile(Car01A){ material=Metal; kickableTop=false; InstaGibPlayer=true; 
+	fixture(){ blockFire=true; collisionGroup=static_ground; collisionPoints=(-27.5,-10.5),(27.5,-10.5),(27.5,1.5),(-27.5,1.5); mass=300kg; }
+	fixture(roof){ material=Glass; collisionGroup=static_ground; collisionGroup=dynamics_g1; absorbProjectile=false; collisionPoints=(-20.5,1.5),(15.5,1.5),(8.5,10.5),(-12.5,10.5); mass=100kg;}
+}
+tile(CarWheel00){ drawCategory=FG; clientSync.DAPCC=true; fixture(){ collisionGroup=static_ground; mass=80kg; circle=(0.0,0.0,5.5); } }
+tile(CarWheel01){ drawCategory=FG; clientSync.DAPCC=true; fixture(){ collisionGroup=static_ground; mass=80kg; circle=(0.0,0.0,5.5); } }
+tile(CarWreck00){ drawCategory=FG; clientSync.DAPCC=true; InstaGibPlayer=true; 
+	fixture(){ blockFire=true; collisionGroup=static_ground; collisionPoints=(-33.5,-10.5),(33.5,-10.5),(33.5,1.5),(-33.5,1.5); mass=400kg;}
+	fixture(roof){ material=metal; collisionGroup=static_ground; collisionGroup=dynamics_g1; absorbProjectile=false; collisionPoints=(-22.5,1.5),(13.5,1.5),(6.5,10.5),(-13.5,10.5); mass=200kg;}}
+
+tile(CardboardBox00){ life=1000; gibpressure.total=50kg; gibpressure.spike=250kg; material=cardboard; absorbProjectile=false; doTakeDamage.fire=true; material.flammable=true; ImpactEffect=ImpactDefault; ImpactSound=ImpactWood; fixture(){ mass=5kg; collisionGroup=debris; collisionPoints=(-6.5,-4.5),(6.5,-4.5),(6.5,4.5),(-6.5,4.5); } }
+tile(CardboardBox00_D){ life=8000; gibpressure.total=50kg; gibpressure.spike=250kg; material=cardboard; absorbProjectile=false; doTakeDamage.fire=true; material.flammable=true; ImpactEffect=ImpactDefault; ImpactSound=ImpactWood; fixture(){ mass=5kg; collisionGroup=debris; collisionPoints=(-6.5,-4.5),(6.5,-4.5),(6.5,4.5),(-6.5,4.5); } }
+
+tile(CargoContainer00A){ material=metal; colorPalette=Metal; fixture(){ blockFire=true; mass=600kg; collisionPoints=(-23.5,-23.5),(23.5,-23.5),(23.5,23.5),(-23.5,23.5); } }
+tile(CargoContainer01A){ material=metal; colorPalette=Metal; fixture(){ blockFire=true; mass=600kg; collisionPoints=(-39.5,-23.5),(39.5,-23.5),(39.5,23.5),(-39.5,23.5); } }
+tile(CargoContainer01B){ drawCategory=SLD; material=metal; colorPalette=Metal;
+	fixture(){ blockFire=true; collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; mass=400kg; collisionPoints=(-39.5,-23.5),(39.5,-23.5),(39.5,23.5),(-39.5,23.5); }
+	fixture(t){ blockFire=true; collisionGroup=static_ground; mass=100kg; collisionPoints=(-39.5,20),(39.5,20),(39.5,23.5),(-39.5,23.5); }
+	fixture(b){ blockFire=true; collisionGroup=static_ground; mass=100kg; collisionPoints=(-39.5,-23.5),(39.5,-23.5),(39.5,-18),(-39.5,-18); }
+}
+
+	
+tile(CashRegister00){ material=metal; life=7500; canBeMissile=true; missileMarkAsHeavyDebris=true; missileMarkAsHeavyDebris=true; objectStrength=50.0; absorbProjectile=false; gibpressure.total=100kg; gibpressure.spike=200kg; fixture(){ mass=10kg; collisionGroup=dynamics_g2; collisionPoints=(-6.5,-4.5),(6.5,-4.5),(6.5,0),(0,4.5),(-6.5,4.5); } }
+
+tile(Chair00){ 
+	punchable=true;
+	canBeMissile=true;
+	missileDamageMax=18|200;
+	kickable=true;
+	life=100000;
+	pickupType=instant;
+	pickupRange=10.0;
+	drawCategory=ITM;
+	gibpressure.total=20kg;
+	gibpressure.spike=80kg;
+	material=wood;
+	material.flammable=true;
+	material.blockExplosions=false;
+	absorbProjectile=false;
+	doTakeDamage.fire=true;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture() { mass=2.5kg; collisionGroup=dynamics_g2; collisionPoints=(-3.5,5),(-3.5,-5),(3.5,-5),(3.5,1); } }
+
+tile(Chandelier00){ material=metal; InstaGibPlayer=true; fixture(){ mass=100kg; collisionPoints=(-11.5,-4),(11.5,-4),(11.5,0),(-11.5,0); blockFire=true; } fixture(a){ collisionGroup=static_ground; collisionPoints=(-4,-4),(0,-8),(4,-4),(4,0),(-4,-0); blockFire=true; } }
+//chandelierA-E_Dcutcontent
+tile(Chandelier01A){ material=metal; InstaGibPlayer=true; fixture(){ collisionGroup=static_ground; mass=150kg; collisionPoints=(-15.5,-4),(15.5,-4),(15.5,0),(-15.5,0); blockFire=true; } }
+tile(Chandelier01B){ material=glass; InstaGibPlayer=true; fixture(){ collisionGroup=static_ground; mass=100kg; collisionPoints=(-13.5,-6),(13.5,-6),(13.5,6),(-13.5,6); blockFire=true; } }
+tile(Chandelier01C){ material=glass; InstaGibPlayer=true; fixture(){ collisionGroup=static_ground; mass=75kg; collisionPoints=(-11.5,-6),(11.5,-6),(11.5,6),(-11.5,6); blockFire=true; } }
+tile(Chandelier01D){ material=glass; InstaGibPlayer=true; fixture(){ collisionGroup=static_ground; mass=50kg; collisionPoints=(-9.5,-6),(9.5,-6),(9.5,6),(-9.5,6); blockFire=true; } }
+
+tile(ChurchBell00){ colorPalette=Metal; material=metal; material.hit.projectile.sound=ChurchBell1; InstaGibPlayer=true; clientSync.DAPCC=true; material.hit.melee.sound=ChurchBell1; fixture(){ mass=250kg; collisionPoints=(-7,-9.5),(7,-9.5),(7,0),(4,6),(-4,6),(-7,0); } }
+//tile(ChurchPew00){ life=40; material=wood; material.flammable=true; projectileHit=false; fixture(){ mass=640; collisionGroup=dynamics_g2; collisionPoints=(-7.5,-7.5),(7.5,-7.5),(7.5,7.5),(-7.5,7.5); }}
+
+tile(ComfyChair){ adpnc=true; life=200; material=cloth; doTakeDamage.fire=true; material.flammable=true; clientSync.DAPCC=true; gibpressure.total=400kg; gibpressure.spike=1600kg; fixture() {collisionPoints=(-7,-7),(7,-7),(7,2),(6,5),(0,7),(-6,5),(-7,2); } }
+
+tile(Concrete01ADynamic){ colorPalette=Concrete; material=concrete; sizeable=D; instaGibPlayer=true; punchable=true; kickable=false; material.blockExplosions=true; fixture(){ collisionGroup=static_ground; blockFire=true; mass=500kg; }}
+tile(Concrete01DDynamic){ colorPalette=Concrete; material=concrete; sizeable=D; instaGibPlayer=true; punchable=true; kickable=false; material.blockExplosions=true; fixture(){ collisionGroup=static_ground; blockFire=true; mass=500kg; }}
+tile(Concrete01EDynamic){ colorPalette=Concrete; material=concrete; sizeable=D; instaGibPlayer=true; punchable=true; kickable=false; material.blockExplosions=true; fixture(){ collisionGroup=static_ground; blockFire=true; mass=500kg; }}
+tile(ConcretePipe01){ InstaGibPlayer=true; material=concrete; material.blockExplosions=true; fixture(){ collisionGroup=static_ground; mass=300kg; circle=(0,0,23.5); blockFire=true; } }
+
+tile(ConveyorBelt00A){ punchable=false; kickable=false; type=Static; material=metal; animation(ConveyorBelt00A){ width=16; frameTime=250; } sizeable=N; fixture() { collisionGroup=none; collisionGroup.maskBits=0000 0000 0000 0100; collisionGroup.categoryBits=0000 0000 0000 0001; blockFire=true; collisionPoints=(-0.0,-7.0),(8.0,-7.0),(8.0,7.0),(-0.0,7.0); } fixture(circle) { collisionGroup=none; blockFire=true; collisionGroup.maskBits=0000 0000 0000 0100; collisionGroup.categoryBits=0000 0000 0000 0001; circle=(0.0,0.0,7.0); } }
+tile(ConveyorBelt00B){ punchable=false; kickable=false; type=Static; material=metal; animation(ConveyorBelt00B){ width=16; frameTime=250; } sizeable=H; fixture() { collisionGroup=none; collisionGroup.maskBits=0000 0000 0000 0100; collisionGroup.categoryBits=0000 0000 0000 0001; blockFire=true; collisionPoints=(-8.0,-7.0),(8.0,-7.0),(8.0,7.0),(-8.0,7.0); } }
+tile(ConveyorBelt00C){ punchable=false; kickable=false; type=Static; material=metal; animation(ConveyorBelt00C){ width=16; frameTime=250; } sizeable=N; fixture() { collisionGroup=none; collisionGroup.maskBits=0000 0000 0000 0100; collisionGroup.categoryBits=0000 0000 0000 0001; blockFire=true; collisionPoints=(-8.0,-7.0),(0.0,-7.0),(0.0,7.0),(-8.0,7.0); } fixture(circle) { collisionGroup=none; blockFire=true; collisionGroup.maskBits=0000 0000 0000 0100; collisionGroup.categoryBits=0000 0000 0000 0001; circle=(0.0,0.0,7.0); } }
+
+tile(CueStick00){ punchable=false; canBeMissile=true; missileDamageMax=21; kickable=false; pickupType=instant; pickupRange=15.0; drawCategory=ITM; life=25; gibpressure.total=40kg; gibpressure.spike=160kg; material=wood; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-0.5,-13.5),(0.5,-13.5),(0.5,13.5),(-0.5,13.5); } }
+tile(CueStick00Shaft){ punchable=false; canBeMissile=true; missileDamageMax=9; kickable=false; pickupType=instant; pickupRange=10.0; drawCategory=ITM; life=25; gibpressure.total=40kg; gibpressure.spike=160kg; material=wood; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=3kg; collisionGroup=dynamics_g2; collisionPoints=(-0.5,-7.5),(0.5,-7.5),(0.5,7.5),(-0.5,7.5); } }
+tile(CueStick00Debris){ life=25; canBeMissile=true; gibpressure.total=40kg; gibpressure.spike=160kg; material=wood; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-0.5,-5.5),(0.5,-5.5),(0.5,5.5),(-0.5,5.5); } }
+
+tile(CrabCan00){ material=metal; gibpressure.total=100kg; gibpressure.spike=400kg; life=5; doTakeDamage.fire=true; objectStrength=10; material.destroyEffect=none; material.destroySound=DestroySmall; fixture(){ mass=1kg; collisionPoints=(-3,-3.5),(3,-3.5),(3,3.5),(-3,3.5); } }
+tile(CrabCan00_D){ material=metal; gibpressure.total=100kg; gibpressure.spike=400kg; life=50; doTakeDamage.fire=true; material.destroyEffect=none; material.destroySound=DestroySmall; absorbProjectile=false; fixture(){ collisionGroup=debris; collisionPoints=(-3,-2),(3,-2),(3,2),(-3,2); }}
+
+//tile(Boulder00A){ material=Stone; material.blockExplosions=false; fixture(){ circle=(0,0,8); mass=200kg; blockFire=true; }}
+//tile(Boulder00B){ material=Stone; material.blockExplosions=false; fixture(){ circle=(0,0,12); mass=250kg; blockFire=true; }}
+//tile(Boulder00C){ material=Stone; material.blockExplosions=false; fixture(){ circle=(0,0,16); mass=300kg; blockFire=true; }}
+
+tile(Boot00){ life=25; gibpressure.total=40kg; gibpressure.spike=160kg; absorbProjectile=false; material.destroySound=DestroySmall; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-1.5,-2.5),(1.5,-2.5),(0.5,2.5),(-1.5,2.5); }}
+tile(Gascan00){ objectStrength=0.0; canBeMissile=true; missileMarkAsHeavyDebris=true; gibpressure.total=200kg; material=metal; doTakeDamage.fire=true; material.blockExplosions=false; material.Resistance.Impact.Modifier=0; material.hit.kick.power=1.5; material.flammable=true; life=5; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-4.5,-5),(4.5,-5),(4.5,5),(-2,5),(-3,4),(-4.5,2); mass=5kg; }}
+tile(GasLamp00){ life=5; material=glass; absorbProjectile=false; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-3,-7),(3,-7),(3,3),(-3,3); }}
+tile(GasLamp00_D){ material=metal; absorbProjectile=false; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; blockFire=false; collisionPoints=(-3,-7),(3,-7),(3,3),(-3,3); }}
+tile(GasMask00){ life=25; gibpressure.total=40kg; gibpressure.spike=160kg; absorbProjectile=false; material.destroyEffect=none; material.destroySound=DestroySmall; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-3,-1.5),(0,-3),(3,-3),(3,3.5),(-3,3.5); }}
+tile(Helmet00){ life=50; gibpressure.total=100kg; gibpressure.spike=400kg; objectStrength=20; material=metal; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-3.5,-3),(3.5,-3),(3.5,3),(-3.5,3); }}
+
+tile(Concrete01Weak){ material=concrete; type=Static; life=40; drawCategory=OBJ; colorPalette=Concrete; fixture(){collisionGroup=static_ground; blockFire=true;} }
+
+tile(Crate00){ adpnc=true; life=75; gibpressure.total=200kg; gibpressure.spike=800kg; objectStrength=50.0; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; clientSync.DAPCC=true; fixture(){ mass=18kg; collisionPoints=(-7.5,-7.5),(7.5,-7.5),(7.5,7.5),(-7.5,7.5); }}
+tile(Crate01){ adpnc=true; life=100; gibpressure.total=300kg; gibpressure.spike=1200kg; objectStrength=100.0; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; clientSync.DAPCC=true; fixture(){ mass=30kg; collisionPoints=(-11.5,-7.5),(11.5,-7.5),(11.5,7.5),(-11.5,7.5); }}
+tile(Crate02){ adpnc=true; life=75; gibpressure.total=200kg; gibpressure.spike=800kg; objectStrength=50.0; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; clientSync.DAPCC=true; fixture(){ mass=18kg; collisionPoints=(-7.5,-7.5),(7.5,-7.5),(7.5,7.5),(-7.5,7.5); }}
+tile(CrumpledPaper00){ life=5; gibpressure.total=10kg; gibpressure.spike=60kg; material=paper; material.resistance.impact.modifier=0; doTakeDamage.fire=true; material.destroySound=DestroySmall; material.destroyEffect=BulletHitPaper; material.blockExplosions=false; absorbProjectile=false; freeRotation=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-2.5,-2.5),(2.5,-2.5),(2.5,2.5),(-2.5,2.5); } }
+tile(Cup00){ life=1; gibpressure.total=10kg; gibpressure.spike=60kg;  material=glass; material.blockExplosions=false; absorbProjectile=false; doTakeDamage.fire=true; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-3,-1.5),(3,-1.5),(3,1.5),-3,1.5); }}
+
+//tile(DeadCowboy00A) { material=flesh; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; mass=10kg; collisionPoints=(-4,10),(-4,-4),(0,-8),(4,-4),(4,10); } fixture(weight){ mass=25kg; collisionGroup=none; collisionPoints=(-4,0),(-4,-4),(0,-8),(4,-4),(4,0); }}
+
+tile(Desk00){ adpnc=true; life=200; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; clientSync.DAPCC=true; gibpressure.total=400kg; gibpressure.spike=1600kg; fixture(){ mass=75kg; collisionPoints=(-8.5,-6.5),(8.5,-6.5),(8.5,6.5),(-8.5,6.5); }}
+tile(Cage00){
+	adpnc=true;
+	drawCategory=FG;
+	life=150;
+	material=metal; gibpressure.total=200kg;
+	gibpressure.spike=800kg; 
+	objectStrength=15.0; 
+	material.destroySound=DestroySmall;
+	canBeMissile=true;
+	missileDamageMax=10|50;
+	absorbProjectile=true;
+	Material.Resistance.Impact.Threshold=100000;
+	fixture(){ mass=3kg; collisionGroup=none; blockFire=false; }
+	fixture(t){ mass=3kg; collisionGroup=static_ground; blockFire=false; collisionPoints=(-7.5,5.5),(7.5,5.5),(7.5,7.5),(-7.5,7.5); }
+	fixture(l){ mass=3kg; collisionGroup=static_ground; blockFire=false; collisionPoints=(-7.5,-7.5),(-6,-7.5),(-6,7.5),(-7.5,7.5); }
+	fixture(r){ mass=3kg; collisionGroup=static_ground; blockFire=false; collisionPoints=(6,-7.5),(7.5,-7.5),(7.5,7.5),(6,7.5); }
+	fixture(b){ mass=3kg; collisionGroup=static_ground; blockFire=false; collisionPoints=(-6.5,-7.5),(6.5,-7.5),(6.5,-6),(-6.5,-6); }
+}
+tile(Cage00_D){ adpnc=true; drawCategory=OBJ; gibpressure.total=200kg; gibpressure.spike=800kg; life=50; material=metal; material.blockExplosions=false; absorbProjectile=false; material.destroySound=DestroySmall;
+	fixture(){ mass=5kg; collisionGroup=debris; blockFire=false; collisionPoints=(-7.5,5.5),(7.5,5.5),(7.5,7.5),(-7.5,7.5); }
+}
+tile(Dove00){ life=1; gibpressure.total=400kg; gibpressure.spike=1600kg; material=flesh; material.hit.melee.effect=HIT_S; material.resistance.impact.threshold=5.0; objectStrength=10; material.destroyEffect=BulletHitPaper; material.blockExplosions=false; material.flammable=false; material.friction=0.0; doTakeDamage.fire=true; animation(Dove00){ width=16; frameTime=50; } fixture(){ collisionGroup=dynamics_g2; circle=(0,0.5,4); } }
+tile(Duct00C_D){ gibpressure.total=400kg; gibpressure.spike=1600kg; absorbProjectile=false; fixture(){ collisionGroup=debris; collisionPoints=(-7.5,-1.5),(7.5,-1.5),(7.5,1.5),(-7.5,1.5); } }
+tile(DrinkingGlass00){ absorbProjectile=false; gibpressure.total=20kg; gibpressure.spike=80kg; doTakeDamage.fire=true; life=3; material=glass; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-1.5,-2),(1.5,-2),(1.5,2),(-1.5,2); } }
+tile(DeskLamp00){ life=5; gibpressure.total=40kg; gibpressure.spike=160kg; material=metal; doTakeDamage.fire=true; colorPalette=Lamp; material.destroySound=DestroyGlass; absorbProjectile=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-2,-3.5),(2,-3.5),(4.5,3.5),(-4.5,3.5); }  }
+
+tile(Elevator02A){ drawCategory=SLD; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-23,-24),(23,-24),(23,-16),(-23,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-23,12),(-20,12),(-20,24),(-23,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,12),(23,12),(23,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(20,18),(20,24),(-20,24); blockFire=true; }}
+tile(Elevator02B){ drawCategory=SLD; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-24,-24),(24,-24),(24,-16),(-24,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-24,12),(-20,12),(-20,24),(-24,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,12),(24,12),(24,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(4,18),(4,24),(-20,24); blockFire=true; }}
+tile(Elevator02C){ drawCategory=SLD; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-24,-24),(24,-24),(24,-16),(-24,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-24,12),(-20,12),(-20,24),(-24,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,-16),(24,-16),(24,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(20,18),(20,24),(-20,24); blockFire=true; }}
+tile(Elevator02D){ drawCategory=SLD; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-24,-24),(20,-24),(20,-16),(-24,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-24,12),(-20,12),(-20,24),(-24,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,-24),(24,-24),(24,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(4,18),(4,24),(-20,24); blockFire=true; }}
+
+tile(Elevator03A){ drawCategory=SLD; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-15,-24),(15,-24),(15,-16),(-15,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-15,12),(-12,12),(-12,24),(-15,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(12,24),(12,12),(15,12),(15,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-12,18),(12,18),(12,24),(-12,24); blockFire=true; }}
+tile(Elevator03B){ drawCategory=SLD; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-15,-24),(15,-24),(15,-16),(-15,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-15,12),(-12,12),(-12,24),(-15,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(12,24),(12,-16),(15,-16),(15,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-12,18),(12,18),(12,24),(-12,24); blockFire=true; }}
+tile(Elevator04A){ drawCategory=SLD; colorPalette=BG; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-15,-24),(15,-24),(15,-16),(-15,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-15,12),(-12,12),(-12,24),(-15,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(12,24),(12,12),(15,12),(15,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-12,18),(12,18),(12,24),(-12,24); blockFire=true; }}
+
+tile(Elevator05A){ drawCategory=SLD; colorPalette=BG; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-23,-24),(23,-24),(23,-16),(-23,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-23,12),(-20,12),(-20,24),(-23,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,12),(23,12),(23,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(20,18),(20,24),(-20,24); blockFire=true; }}
+tile(Elevator05B){ drawCategory=SLD; colorPalette=BG; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-24,-24),(24,-24),(24,-16),(-24,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-24,12),(-20,12),(-20,24),(-24,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,12),(24,12),(24,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(4,18),(4,24),(-20,24); blockFire=true; }}
+tile(Elevator05C){ drawCategory=SLD; colorPalette=BG; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-24,-24),(24,-24),(24,-16),(-24,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-24,12),(-20,12),(-20,24),(-24,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,-16),(24,-16),(24,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(20,18),(20,24),(-20,24); blockFire=true; }}
+tile(Elevator05D){ drawCategory=SLD; colorPalette=BG; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-24,-24),(20,-24),(20,-16),(-24,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-24,12),(-20,12),(-20,24),(-24,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(20,24),(20,-24),(24,-24),(24,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-20,18),(4,18),(4,24),(-20,24); blockFire=true; }}
+	
+tile(FerrisWheel00){ colorPalette=BG; drawCategory=SLD; kickable=false; punchable=false; projectileHit=false; fixture(){ collisionGroup=none; circle=(0,0,96); }}
+tile(FerrisWheelCart00){ material=metal; kickableTop=false; 
+	fixture(){ collisionGroup=none; projectileHit=false; mass=10kg; blockFire=false; }
+	fixture(floor){ collisionGroup=static_ground; mass=100kg; collisionPoints=(-10,-18),(10,-18),(10,-14),(-10,-14);}
+	fixture(l){ collisionGroup=static_ground; collisionPoints=(-14,-12),(-14,-18),(-10,-18),(-10,-10);  }
+	fixture(r){ collisionGroup=static_ground; collisionPoints=(10,-10),(10,-18),(14,-18),(14,-12);} 
+	fixture(l_top){ projectileHit=false; collisionGroup=static_ground; collisionPoints=(-14,-10),(-14,-18),(-10,-18),(-10,-10);  }
+	fixture(r_top){ projectileHit=false; collisionGroup=static_ground; collisionPoints=(10,-10),(10,-18),(14,-18),(14,-10);} 
+	fixture(roof){ collisionGroup=static_ground; absorbProjectile=false; collisionPoints=(-11,16),(11,16),(11,20),(-11,20);}}
+
+tile(CarnivalCart00){ material=metal; kickableTop=false;
+	fixture(){ collisionGroup=none; projectileHit=false; mass=10kg; blockFire=true; }
+	fixture(floor){ collisionGroup=static_ground; mass=100kg; collisionPoints=(-14,-4),(-10,-8),(10,-8),(14,-4),(14,4),(-14,4);}}
+	//fixture(l){ collisionGroup=static_ground; collisionPoints=(-14,4),(-14,-8),(-10,-8),(-10,6);  }
+	//fixture(r){ collisionGroup=static_ground; collisionPoints=(10,6),(10,-8),(14,-8),(14,4);} 
+	//fixture(l_top){ projectileHit=false; collisionGroup=static_ground; collisionPoints=(-16,6),(-16,-8),(-12,-8),(-12,6);  }
+	//fixture(r_top){ projectileHit=false; collisionGroup=static_ground; collisionPoints=(12,6),(12,-8),(16,-8),(16,6); }
+	//fixture(){ collisionGroup=static_ground; collisionPoints=(-16,-8),(16,-8),(16,8),(-16,8);}}
+tile(CarnivalCart01){ material=metal; kickableTop=false; 
+	fixture(){ collisionGroup=none; projectileHit=false; mass=10kg; blockFire=true; }
+	fixture(floor){ collisionGroup=static_ground; mass=100kg; collisionPoints=(-16,-20),(16,-20),(16,-12),(-16,-12);}
+	fixture(l){ collisionGroup=static_ground; collisionPoints=(-16,-8),(-16,-20),(-12,-20),(-12,-6);  }
+	fixture(r){ collisionGroup=static_ground; collisionPoints=(12,-6),(12,-20),(16,-20),(16,-8);} 
+	fixture(l_top){ projectileHit=false; collisionGroup=static_ground; collisionPoints=(-16,-6),(-16,-20),(-12,-20),(-12,-6);  }
+	fixture(r_top){ projectileHit=false; collisionGroup=static_ground; collisionPoints=(12,-6),(12,-20),(16,-20),(16,-6);} 
+	fixture(roof){ collisionGroup=static_ground; absorbProjectile=false; collisionPoints=(-14,20),(14,20),(14,24),(-14,24);}}
+tile(CarnivalCart01_D){ projectileHit=false; fixture(){ collisionGroup=none; mass=100kg; blockFire=true; }}
+tile(CarnivalFerrisWheel){ material=metal; drawCategory=SLD; kickable=false; punchable=false; colorPalette=BG; projectileHit=false; fixture(){ collisionGroup=none; circle=(0,0,100); }}
+
+tile(FileCab00){ adpnc=true; life=200; material=metal; gibpressure.total=400kg; gibpressure.spike=1600kg; material.blockExplosions=false; material.flammable=false; clientSync.DAPCC=true; fixture(){ mass=100kg; collisionPoints=(-6.5,-7.5),(6.5,-7.5),(6.5,7.5),(-6.5,7.5); }}
+//tile(FireHydrant00){ type=Static; life=50; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-6,-8),(6,-8),(6,8),(-6,8); } }
+
+tile(FlagpoleUS){ life=100; punchable=false; kickable=false; canBeMissile=true; missileDamageMax=15|11; absorbProjectile=false; material=metal; pickupType=instant; pickupRange=10.0; drawCategory=ITM; gibPressure.total=400kg; gibpressure.total=400kg; gibpressure.spike=1600kg; material.blockExplosions=false; impactEffect=ImpactDefault;	impactSound=ImpactMetal;
+	fixture(){ collisionGroup=debris; blockFire=false; mass=5kg; collisionPoints=(-2.5,-11.5),(2.5,-11.5),(2.5,7.5),(0,12.5),(-2.5,7.5); }
+	fixture(base){ collisionGroup=debris; blockFire=false; mass=5kg; collisionPoints=(-3.5,-11.5),(3.5,-11.5),(3.5,-10.5),(-3.5,-10.5); }}
+
+tile(Forklift00){ material=metal; instaGibPlayer=true; 
+ fixture(){ kickableTop=false; collisionGroup=dynamics_g1; collisionPoints=(-15.5,-23.5),(13.5,-23.5),(13.5,-8.5),(-15.5,-8.5); mass=300kg; } 
+ fixture(front){ projectileHit=false; collisionGroup=dynamics_g2; collisionPoints=(12.5,-21.5),(15.5,-21.5),(15.5,19.5),(12.5,19.5); mass=200kg;  }}
+tile(Forklift00Fork){ material=metal; isCloud=true; cloudRotation=0; absorbProjectile=false; 
+ fixture(){ kickableTop=false; collisionGroup=dynamics_g1; collisionPoints=(-15.5,0),(15.5,0),(15.5,3.5),(-15.5,3.5); }}
+	
+tile(Gargoyle00){ life=25; material=stone; type=Static; sizeable=N; clientSync.ECODBPI=true; clientSync.DAPCC=true; fixture(){ collisionPoints=(8,-12),(8,12),(-8,12),(-8,4); } }
+tile(Gargoyle00_D){ material=stone; type=Static; sizeable=N; clientSync.DAPCC=true; fixture(){ collisionPoints=(8,-12),(8,12),(-8,12),(-8,4); } }
+tile(Gargoyle01){ life=25; drawCategory=FG; material=stone; type=Static; sizeable=N; clientSync.ECODBPI=true; clientSync.DAPCC=true;
+	fixture(){ collisionPoints=(-12,-16),(-8,-16),(4,0),(4,8),(-12,8); } 
+	fixture(head){ collisionPoints=(4,0),(12,0),(12,8),(4,8); }
+}
+tile(Gargoyle01_D){ material=stone; drawCategory=FG; type=Static; sizeable=N; clientSync.DAPCC=true;
+	fixture(){ collisionPoints=(-12,-16),(-8,-16),(4,0),(4,8),(-12,8); }
+}
+tile(Gargoyle01Head){ material=stone; sizeable=N; clientSync.DAPCC=true; gibpressure.total=400kg; gibpressure.spike=1600kg; fixture(){ collisionGroup=debris; mass=10kg; collisionPoints=(-3.5,-4.5),(3.5,-4.5),(3.5,2.5),(-3.5,2.5); } }
+
+tile(GlassElevator00A){ drawCategory=FG; kickable=false; punchable=false; material=metal; material.resistance.fire.modifier=0;
+	fixture(){ collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(floor){ collisionGroup=static_ground; collisionPoints=(-15,-24),(15,-24),(15,-16),(-15,-16); blockFire=true; }
+	fixture(left){ collisionGroup=static_ground; collisionPoints=(-15,12),(-12,12),(-12,24),(-15,24); blockFire=true; }
+	fixture(right){ collisionGroup=static_ground; collisionPoints=(12,24),(12,-16),(15,-16),(15,24); blockFire=true; }
+	fixture(roof){ collisionGroup=static_ground; collisionPoints=(-12,18),(12,18),(12,24),(-12,24); blockFire=true; }}
+
+tile(HangingCrate00){ material=wood; material.flammable=false; type=Dynamic; instaGibPlayer=true; fixture(){ blockFire=true; collisionPoints=(-15.5,-9.5),(15.5,-9.5),(15.5,9.5),(-15.5,9.5); mass=200kg; } }
+tile(HangingCrate01){ material=wood; material.flammable=false; type=Dynamic; instaGibPlayer=true; fixture(){ blockFire=true; collisionPoints=(-15.5,-15.5),(15.5,-15.5),(15.5,15.5),(-15.5,15.5); mass=300kg; } }
+tile(HangingCrateHolder){ material=metal; life=1; objectStrength=1; doTakeDamage.fire=true; material.destroySound=DestroySmall; material.Resistance.Impact.Modifier=0; fixture(){ mass=50kg; collisionGroup=dynamics_g2; collisionPoints=(-4,-4),(4,-4),(4,0),(-4,0); } }
+//tile(HangingCrateHolderSmall){ fixture(){ mass=30kg; collisionGroup=dynamics_g2; collisionPoints=(-4,-4),(4,-4),(4,0),(-4,0); } }
+
+//tile(HangingDuct00){ life=50; type=Static; material=Metal; fixture(){ collisionPoints=(-15.5,-7.5),(15.5,-7.5),(15.5,8),(-15.5,8); }}
+//tile(HangingDuct00_D){ material=Metal; fixture(){ collisionPoints=(-15.5,-7.5),(15.5,-7.5),(15.5,8),(-15.5,8); }}
+
+tile(HangingLamp00){ material=metal; life=1; objectStrength=50; colorPalette=Lamp; material.destroySound=DestroyGlass; doTakeDamage.fire=true; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; mass=1kg; collisionPoints=(-7.5,-3.5),(7.5,-3.5),(7.5,3.5),(-7.5,3.5); } } //animation(HangingLamp00){ width=16; frameTimes=2300,25,50,25; isSynced=false;} }
+tile(HangingLamp00_D){ material=metal; absorbProjectile=false; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-7.5,-3.5),(7.5,-3.5),(7.5,3.5),(-7.5,3.5); } }
+//tile(HangingLamp01){ isCloud=true; cloudRotation=0; material=metal; life=1; colorPalette=Lamp; material.destroySound=DestroyGlass; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-16,-3),(16,-3),(16,3),(-16,3); } }
+//tile(HangingLamp01_D){ isCloud=true; cloudRotation=0; material=metal; absorbProjectile=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-16,-3),(16,-3),(16,3),(-16,3); } }
+tile(Jukebox00){ type=Static; projectileHit=false; drawCategory=OBJ; colorPalette=BG; punchable=false; kickable=false;
+	animation(Jukebox00){ width=16; frameTimes=0; }
+	fixture(){ collisionGroup=none; }}
+tile(JusticeStatue00)
+{
+	drawCategory=SLD; material=Stone; type=Static; material.blockExplosions=false; kickable=false; punchable=false; projectileHit=false;
+	fixture(){ collisionGroup=dynamics_g2; blockFire=false; mass=500kg; collisionPoints=(0,-96),(32,-96),(32,48),(0,48); }
+}
+tile(JusticeStatue00Scales)
+{
+	drawCategory=SLD; material=Stone; type=Dynamic; material.blockExplosions=false; kickable=false; punchable=false; projectileHit=false;
+	fixture(){ collisionGroup=dynamics_g2; blockFire=false; mass=10kg; collisionPoints=(-15.5,-3.5),(15.5,-3.5),(15.5,-0.5),(-15.5,-0.5); }
+}
+tile(JusticeStatue00Bowl)
+{
+	drawCategory=SLD; material=Stone; type=Dynamic; material.blockExplosions=true; kickable=true; punchable=true; projectileHit=true;
+	fixture(){ collisionGroup=static_ground; blockFire=true; mass=3kg; collisionPoints=(-10.5,-5.5),(-10.5,-7.5),(-5.5,-14.5),(5.5,-14.5),(10.5,-7.5),(10.5,-5.5); }
+}
+tile(Lamp00){ type=Static; material=metal; life=1; objectStrength=50; material.destroySound=DestroyGlass; colorPalette=Lamp; doTakeDamage.fire=true; fixture(){ collisionGroup=dynamics_g2; } }//fixture(){ collisionGroup=none; } } //material.resistance.impact.threshold=0; material.resistance.impact.modifier=100; 
+tile(Lamp00_D){ type=Static; material=metal; absorbProjectile=false; fixture(){ collisionGroup=none; } }
+tile(Lamp01){ type=Static; material=metal; life=1; absorbProjectile=false; material.destroySound=DestroyGlass; colorPalette=Lamp; doTakeDamage.fire=true; fixture(){ collisionGroup=none; } }
+tile(Lamp01_D){ type=Static; material=metal; absorbProjectile=false; fixture(){ collisionGroup=none; } }
+tile(Lifeboat00){ material=wood; material.flammable=true; drawCategory=FG; kickableTop=false; fixture(){ collisionPoints=(-24,0),(24,0),(24,4),(-24,4); } fixture(hull){ collisionGroup=dynamics_g1; collisionPoints=(-8,-12),(8,-12),(20,-6),(24,0),(-24,0),(-20,-6); } fixture(l){ collisionGroup=dynamics_g1; collisionPoints=(-24,4),(-20,4),(-20,8),(-24,8); } fixture(r){ collisionGroup=dynamics_g1; collisionPoints=(20,4),(24,4),(24,8),(20,8); } }
+tile(Helicopter00){ drawCategory=SLD; material=metal; punchable=false; kickable=false; life = 300;
+		material.resistance.fire.modifier=0;
+		material.resistance.explosion.modifier=0;
+		material.resistance.projectile.modifier=0;
+		material.resistance.impact.modifier=0;
+		material.resistance.impact.threshold=0;
+		material.resistance.playerImpact.modifier=0;
+		material.resistance.explosion.modifier = 1;
+		material.resistance.explosion.threshold = 25;
+	 animation(Helicopter00){ frame	Time=50; width=128; }
+	 fixture() { mass=200kg; collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	 fixture(roof) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-25.5,14),(25.5,14),(25.5,21.5),(-25.5,21.5); }
+	 fixture(floor) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-25.5,-20),(25.5,-20),(25.5,-12.5),(-25.5,-12.5); }
+	 fixture(l) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-23.5,-32),(-20,-32),(-12,-22),(-16,-22); }
+	 fixture(r) { collisionGroup=static_ground; mass=10kg; collisionPoints=(20,-31.5),(23.5,-31.5),(16,-22.5),(12,-22.5); }
+}
+tile(Helicopter00_D){ drawCategory=SLD; material=metal; punchable=false; kickable=false;
+	 animation(Helicopter00_D){ frameTime=50; width=128; }
+	 fixture() { mass=200kg; collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	 fixture(roof) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-25.5,14),(25.5,14),(25.5,21.5),(-25.5,21.5); }
+	 fixture(floor) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-25.5,-20),(25.5,-20),(25.5,-12.5),(-25.5,-12.5); }
+	 fixture(l) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-23.5,-32),(-20,-32),(-12,-22),(-16,-22); }
+	 fixture(r) { collisionGroup=static_ground; mass=10kg; collisionPoints=(20,-31.5),(23.5,-31.5),(16,-22.5),(12,-22.5); }
+}
+tile(Helicopter00Wreck){ drawCategory=SLD; material=metal; punchable=false; kickable=false;
+	 animation(Helicopter00_D){ frameTime=50; width=128; }
+	 fixture() { mass=200kg; collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	 fixture(roof) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-25.5,14),(25.5,14),(25.5,21.5),(-25.5,21.5); }
+	 fixture(floor) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-25.5,-20),(25.5,-20),(25.5,-12.5),(-25.5,-12.5); }
+	 fixture(l) { collisionGroup=static_ground; mass=10kg; collisionPoints=(-23.5,-32),(-20,-32),(-12,-22),(-16,-22); }
+	 fixture(r) { collisionGroup=static_ground; mass=10kg; collisionPoints=(20,-31.5),(23.5,-31.5),(16,-22.5),(12,-22.5); }
+}
+tile(Hook00){ adpnc=true; material=metal; absorbProjectile=true; fixture(){ collisionPoints=(-3.5,-3.5),(3.5,-3.5),(3.5,7.5),(-3.5,7.5); mass=100kg; blockFire=true; } }
+tile(Hook01){ adpnc=true; material=metal; absorbProjectile=true; fixture(){ collisionPoints=(-7.5,3),(-3.5,-0.5),(3.5,-0.5),(7.5,3),(7.5,7.5),(-7.5,7.5); mass=100kg; blockFire=true; } }
+//hook01cut
+tile(Lift00A){ isCloud=true; cloudRotation=0.0; absorbProjectile=false; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-11.5,-3.5),(11.5,-3.5),(11.5,4),(-11.5,4); } }
+tile(Lift00B){ isCloud=true; cloudRotation=0.0; absorbProjectile=false; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-15.5,-3.5),(15.5,-3.5),(15.5,4),(-15.5,4); } }
+tile(Lift00C){ isCloud=true; cloudRotation=0.0; absorbProjectile=false; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-23.5,-3.5),(23.5,-3.5),(23.5,4),(-23.5,4); } }
+tile(Lift00D){ isCloud=true; cloudRotation=0.0; absorbProjectile=false; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-19.5,-3.5),(19.5,-3.5),(19.5,4),(-19.5,4); } }
+
+tile(MetalHatch00A){ life=5; material=metal; objectStrength=50; type=Static; breakOnDive=true; breakOnStagger=true; fixture(){ collisionGroup=static_ground; blockFire=true; }}
+tile(MetalHatch00B){ life=5; material=metal; objectStrength=50; type=Static; breakOnDive=true; breakOnStagger=true; fixture(){ collisionGroup=static_ground; blockFire=true; }}
+
+tile(MetalDesk00){ adpnc=true; life=300; material=metal; material.blockExplosions=false; gibpressure.total=400kg; gibpressure.spike=1600kg; fixture(){ mass=150kg; collisionPoints=(-8.5,-6.5),(8.5,-6.5),(8.5,6.5),(-8.5,6.5); }}
+
+tile(MetalShelf00A){ material.density = 0.5kg; drawCategory=FG; material=metal; absorbProjectile=false; material.blockExplosions=false; sizeable=V; fixture(){ collisionGroup=debris; blockFire=false; }}
+tile(MetalShelf00B){ material.density = 0.5kg; drawCategory=FG; material=metal; sizeable=N; fixture(){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(-12,0),(12,0),(12,4),(-12,4); }}
+
+tile(MetalRailing00){ adpnc=true; type=Static; life=25; absorbProjectile=true; material=metal; objectStrength=40; breakOnDive=true; breakOnStagger=true; material.blockExplosions=false; fixture(){ collisionPoints=(-3,-8),(3,-8),(3,6),(-3,6); }}
+tile(MetalRailing00_D){ adpnc=true; absorbProjectile=false; material=metal; material.blockExplosions=false; fixture(){ collisionGroup=debris; collisionPoints=(-2.5,-6.5),(2.5,-6.5),(2.5,6.5),(-2.5,6.5); }}
+
+tile(MetalTable00){ adpnc=true; life=300; material=metal; material.blockExplosions=false; material.hit.kick.power=0.7; clientSync.DAPCC=true; gibpressure.total=400kg; gibpressure.spike=1600kg; 
+	fixture() { collisionPoints=(-7.5,0),(7.5,0),(7.5,5.5),(-7.5,5.5); blockFire=false; mass=8kg; }
+	fixture(l1) { collisionGroup=dynamics_g2; collisionPoints=(-7.5,-5),(-5.5,-5),(-5.5,0),(-7.5,0); blockFire=false; mass=2kg; }
+	fixture(l2) { collisionGroup=dynamics_g2; collisionPoints=(5.5,-5),(7.5,-5),(7.5,0),(5.5,0); blockFire=false; mass=2kg; } }
+
+tile(MoneyClip00){ life=5; material=paper; material.hit.projectile.effect=BulletHitMoney; gibpressure.total=40kg; gibpressure.spike=160kg; material.destroyEffect=BulletHitMoney; absorbProjectile=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-2.5,-1.5),(2.5,-1.5),(2.5,1.5),(-2.5,1.5); } }
+	
+tile(Padlock00){ life=1; type=Static; material=metal; material.blockExplosions=false; doTakeDamage.fire=true; fixture(){ collisionGroup=dynamics_g2; }}
+tile(Padlock00_D){ life=50; material=metal; material.blockExplosions=false; absorbProjectile=false; gibpressure.total=40kg; gibpressure.spike=160kg; fixture(){ collisionGroup=debris; }}
+tile(Pallet00){ life=50; material=wood; material.flammable=true; doTakeDamage.fire=true; fixture(){ collisionPoints=(-14,-3.5),(14,-3.5),(15.5,0),(14,3.5),(-14,3.5),(-15.5,0); } }
+tile(PaperBinder00){ life=30; gibpressure.total=40kg; gibpressure.spike=160kg; objectStrength=40; material=paper; doTakeDamage.fire=true; material.blockExplosions=false; absorbProjectile=false; ImpactEffect=ImpactPaper; fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-4.5,-5),(4.5,-5),(4.5,5),(-4.5,5); } }
+
+tile(PaperLantern00){ life=5; material=paper; material.resistance.impact.threshold=9; material.DestroyEffect=BulletHitPaper; material.blockExplosions=false; material.flammable=true; doTakeDamage.fire=true; absorbProjectile=false; fixture() { circle=(0,0,8); collisionGroup=dynamics_g2; } animation(PaperLantern00){ width=16; frameTimes=250; isSynced=false;} }
+//paperlanterncut
+tile(PaperStack00){ life=30; gibpressure.total=40kg; gibpressure.spike=160kg; objectStrength=40; material=paper; doTakeDamage.fire=true; material.blockExplosions=false; absorbProjectile=false; ImpactEffect=ImpactPaper; fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-3.5,-3.5),(3.5,-3.5),(3.5,3.5),(-3.5,3.5); } }
+tile(Plank00){ life=50; gibpressure.total=300kg; gibpressure.spike=800kg; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; objectStrength=25.0; isCloud=true; absorbProjectile=false; fixture(){ mass=10kg; collisionPoints=(-15.5,-1),(15.5,-1),(15.5,1.5),(-15.5,1.5); } }
+tile(Plank02){ life=50; gibpressure.total=300kg; gibpressure.spike=800kg; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; objectStrength=25.0; isCloud=true; absorbProjectile=false; fixture(){ mass=18kg; collisionPoints=(-24,-1),(24,-1),(24,1.5),(-24,1.5); } }
+tile(Plank01){ life=50; gibpressure.total=300kg; gibpressure.spike=800kg; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; objectStrength=25.0; isCloud=true; absorbProjectile=false; fixture(){ mass=14kg; collisionPoints=(-20,-1),(20,-1),(20,1.5),(-20,1.5); } }
+tile(Piano00){ life=100; material=wood; material.flammable=false; material.hit.projectile.sound = BulletHitPiano; material.hit.melee.sound=BulletHitPiano; doTakeDamage.fire=true; material.destroyEffect=DestroyPiano; material.destroySound=DestroyPiano; material.stepSound=FootstepPiano; clientSync.ECODBPI=true; instaGibPlayer=true;
+	fixture(){ collisionGroup=dynamics_g1; collisionPoints=(-15,-1.5),(15,-1.5),(15,3.5),(-15,3.5); mass=350kg; blockFire=true; }
+	fixture(b){ collisionGroup=dynamics_g1; collisionPoints=(-10,-9.5),(10,-9.5),(10,3.5),(-10,3.5); mass=250kg; blockFire=true; } }
+tile(Piano00_D){ material=wood; material.flammable=false; material.hit.projectile.sound = BulletHitPiano; material.hit.melee.sound = BulletHitPiano; material.destroyEffect=DestroyPiano; material.destroySound=DestroyPiano; material.stepSound=FootstepPiano; instaGibPlayer=true; 
+	fixture(){ collisionGroup=dynamics_g1; collisionPoints=(-15,-1.5),(15,-1.5),(15,3.5),(-15,3.5); mass=350kg; blockFire=true; } }
+	
+tile(Pillow00){ life=50; gibpressure.total=200kg; gibpressure.spike=800kg; canBeMissile=true; missileDamageFactor=0; missileDamageBase=1; punchable=false; kickable=false; pickupType=instant; absorbProjectile=false; pickupRange=10.0; drawCategory=ITM; material=pillow; material.blockExplosions=false; ImpactEffect=ImpactDefault; fixture(){ mass=4kg; collisionGroup=debris; blockFire=false; collisionPoints=(-5.5,-1.5),(5.5,-1.5),(5.5,0),(3.5,2.5),(-5.5,2.5); } }
+
+tile(Piston00A){ drawCategory=SLD; material=metal; sizeable=V; fixture() { blockFire=true; collisionGroup=static_ground; } }
+tile(Piston00B){ drawCategory=SLD; material=metal; sizeable=V; fixture() { blockFire=true; collisionGroup=static_ground; } }
+
+tile(PoliceBlimp00){ drawCategory=SLD; material=metal; punchable=false; kickable=false; isCloud=true; cloudRotation=0;
+	fixture() { mass=200kg; collisionGroup=none; projectileHit=false; blockFire=false; material.blockExplosions=false; }
+	fixture(balloonLL) { mass=50kg; collisionGroup=static_ground; projectileHit=false; blockFire=false; material.blockExplosions=false; isCloud=true; collisionPoints=(-120,20),(-120,18),(-96,38),(-96,40); }
+	fixture(balloonL) { mass=50kg; collisionGroup=static_ground; projectileHit=false; blockFire=false; material.blockExplosions=false; isCloud=true; collisionPoints=(-96,38),(-52,50),(-52,52),(-96,40); }
+	fixture(balloonM) { mass=50kg; collisionGroup=static_ground; projectileHit=false; blockFire=false; material.blockExplosions=false; isCloud=true; collisionPoints=(-52,50),(52,50),(52,52),(-52,52); }
+	fixture(balloonR) { mass=50kg; collisionGroup=static_ground; projectileHit=false; blockFire=false; material.blockExplosions=false; isCloud=true; collisionPoints=(52,50),(96,38),(96,40),(52,52); }
+	fixture(balloonRR) { mass=50kg; collisionGroup=static_ground; projectileHit=false; blockFire=false; material.blockExplosions=false; isCloud=true; collisionPoints=(96,38),(120,18),(120,20),(96,40); }
+ }
+
+tile(PropaneTank){
+	objectStrength=100;
+	canBeMissile=true;
+	missileMarkAsHeavyDebris=true;
+	missileDamageBase=-4;
+	gibpressure.total=200kg;
+	material=metal;
+	material.blockExplosions=false;
+	doTakeDamage.fire=true;
+	material.Resistance.Impact.Modifier=0;
+	material.hit.kick.power=1.5;
+	material.flammable=true;
+	life=15;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-4,-5),(4,-5),(4,3),(-4,3); mass=5kg; }}
+tile(Pulley00){ material=metal; absorbProjectile=false; material.blockExplosions=false; fixture(){ collisionGroup=none; mass=100kg; } }
+tile(Pulley00Weak){ material=metal; life=1; objectStrength=1; doTakeDamage.fire=true; material.blockExplosions=false; material.Resistance.Impact.Modifier=0; fixture(){ collisionGroup=none; mass=100kg; } }
+
+tile(Pulley01){ material=metal; absorbProjectile=true; kickableTop=false; fixture(){ mass=150kg; collisionPoints=(-11.5,-3.5),(11.5,-3.5),(11.5,3.5),(-11.5,3.5); blockFire=true; } }
+
+tile(Sampan00){ material=wood; drawCategory=FG; fixture(){ collisionGroup=static_ground; blockFire=true; mass=250kg; collisionPoints=(-64,0),(-16,0),(-16,31.5),(-64,31.5); } fixture(hull){ collisionGroup=static_ground; blockFire=true; mass=500kg; collisionPoints=(-48,-32),(48,-32),(64,0),(64,8),(-64,8),(-64,0); } }
+
+tile(Safe00){ adpnc=true; material=metal; fixture(){ collisionPoints=(-7.5,-8),(7.5,-8),(7.5,7.5),(-7.5,7.5); } }
+
+tile(Sawblade00){ material=metal; drawCategory=FG; fixture(){ collisionGroup=full; circle=(0,0,13.5); } }
+
+tile(Shelf00){ material=wood; material.flammable=true; doTakeDamage.fire=true; life=10; isCloud=true; cloudRotation=0.0; absorbProjectile=false; material.blockExplosions=false; type=Static; fixture(){ collisionPoints=(-7.5,0),(7.5,0),(7.5,3.5),(-7.5,3.5); } }
+
+tile(SearchLight00){ type=Static; drawCategory=BG; projectileHit=false; material.blockExplosions=false; fixture(){ collisionGroup=none; } }
+tile(SearchLight00Fixed){ tileTexture=SearchLight00; type=Static; drawCategory=BG; projectileHit=false; material.blockExplosions=false; fixture(){ collisionGroup=none; } }
+tile(SearchLight00Holder){ type=Static; drawCategory=BG; projectileHit=false; material.blockExplosions=false; fixture(){ collisionGroup=none; } }
+
+//somecutcontentpastehere
+tile(Spotlight00A){ life=1; type=Static; material=metal; material.blockExplosions=false; } //material.resistance.impact.modifier=0;
+tile(Spotlight00A_D){ life=5; material=metal; material.blockExplosions=false; drawCategory=SLD; }
+tile(Spotlight00AWeak){ life=1; type=Static; material=metal; material.blockExplosions=false; animation(Spotlight00AWeak){ width=10; frameTimes=0; } }
+tile(Spotlight00B){ type=Static; projectileHit=false; fixture(){ collisionGroup=none; } }
+
+//somecutcontentpastehere
+tile(StreetsweeperCrate) { adpnc=true; type=Dynamic; life=100; material=metal; gibpressure.total=400kg; gibpressure.spike=1600kg; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; 
+	animation(StreetsweeperCrate){ width=16; frameTime=0; } fixture(){ collisionGroup=none; }
+	fixture(){ collisionGroup=dynamics_g1; collisionPoints=(-7.5,-7.5),(7.5,-7.5),(7.5,7.5),(-7.5,7.5); mass=30kg; } }
+tile(StreetsweeperCratePart) { 
+	type=Dynamic;
+	material=metal;
+	gibpressure.total=400kg;
+	gibpressure.spike=1600kg;
+	canBeMissile=true;
+	absorbProjectile=false;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault; 
+	fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-3.5,-3.5),(-1,-3.5),(3.5,1),(3.5,3.5),(-3.5,3.5); mass=0.1kg; } }
+tile(Streetsweeper){ 
+	type=Dynamic;
+	adpnc=true;
+	drawCategory=PLR; 
+	material=metal;
+	life=45;
+	Material.Resistance.Impact.Threshold=5;
+	Material.Resistance.Impact.Modifier=1;
+	Material.Resistance.Fire.Modifier=2;
+	doTakeDamage.fire=true; 
+	gibpressure.total=400kg; gibpressure.spike=1600kg; 
+	ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; 
+	animation(Streetsweeper){ width=32; frameTime=40; } fixture(){ collisionGroup=none; }
+	fixture(){ collisionGroup = dynamics_g2; circle=(0,0,5.5); mass=20kg; }
+	fixture(propellerSensor){ collisionGroup = dynamics_g1; collisionPoints=(-9.5,11.0),(9.5,11.0),(9.5,14.0),(-9.5,14.0); mass=1kg; }
+	}
+tile(StreetsweeperWreck){ type=Dynamic; material=metal; canBeMissile=true; missileMarkAsHeavyDebris=true; gibpressure.total=400kg; gibpressure.spike=1600kg;
+	animation(StreetsweeperWreck){ width=16; frameTime=0; } fixture(){ collisionGroup=none; }
+	ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; 
+	fixture(){ collisionGroup = debris; circle=(0,0,5.5); mass=15kg; }
+	fixture(a){ collisionGroup = debris; collisionPoints=(-0.5,-6),(0.5,-6),(0.5,6),(-0.5,6); mass=1kg; }}
+
+tile(Suitcase00){ punchable=false; canBeMissile=true; missileDamageMax=22; kickable=false; pickupType=instant; pickupRange=10.0; drawCategory=ITM; life=25; gibpressure.total=40kg; gibpressure.spike=160kg; material=wood; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-6.5,-5.5),(6.5,-5.5),(6.5,3.5),(-6.5,3.5); } }
+tile(Suitcase00Debris1){ life=25; canBeMissile=true; gibpressure.total=40kg; gibpressure.spike=160kg; material=wood; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-3.5,-2.5),(2.5,-0.5),(2.5,2.5),(-4,2.5); } }
+tile(Suitcase00Debris2){ life=25; canBeMissile=true; gibpressure.total=40kg; gibpressure.spike=160kg; material=wood; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-2.5,-2.5),(2.5,-2.5),(2.5,1.5),(-2.5,0.5); } }
+
+tile(SupplyCrate00){ 
+	life=10; // melee is hard-coded to be one hit-break
+	drawCategory=ITM; // let supplyCrates render in ITM layer so they don't get behind stuff
+	objectStrength=25;
+	tileTexture=SupplyCrate00Random;
+	gibpressure.total=50kg; 
+	gibpressure.spike=200kg; 
+	material=wood; 
+	projectileHit=true;
+	doTakeDamage.fire=true; 
+	material.flammable=true; 
+	material.blockExplosions=false; 
+	helpEntry=SupplyCrate00;
+	Material.Resistance.Impact.Threshold=5;
+	Material.Resistance.Impact.Modifier=0.2;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault; 
+	fixture(){ mass=5kg; collisionPoints=none; collisionGroup=dynamics_g2; collisionPoints=(-7,-5.5),(7,-5.5),(7,5.5),(-7,5.5); } 
+}
+
+////can be re-used for a gear or something
+//Cutcontentpastehere
+tile(SteamshipWheel00){ material=metal;
+	fixture(){ circle=(0,0,40); blockFire=true; }
+	fixture(t){ collisionGroup=dynamics_g1;  blockFire=true; collisionPoints=(-6,38),(6,38),(6,48),(4,48); } 			//collisionPoints=(-4,40),(4,40),(4,48),(-4,48); }
+	fixture(b){ collisionGroup=dynamics_g1;  blockFire=true; collisionPoints=(-6,-48),(-4,-48),(6,-38),(-6,-38); } 		//collisionPoints=(-4,-48),(4,-48),(4,-40),(-4,-40); }
+	fixture(l){ collisionGroup=dynamics_g1;  blockFire=true; collisionPoints=(-38,-6),(-38,6),(-48,6),(-48,4); } 		//collisionPoints=(-48,-4),(-40,-4),(-40,4),(-48,4); }
+	fixture(r){ collisionGroup=dynamics_g1;  blockFire=true; collisionPoints=(38,-6),(48,-6),(48,-4),(38,6); } 			//collisionPoints=(40,-4),(48,-4),(48,4),(40,4); }
+	fixture(tl){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(-30,38),(-32,36),(-32,24),(-24,32); } 	//collisionPoints=(-32,38),(-38,32),(-32,26),(-26,32); }
+	fixture(bl){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(-32,-24),(-38,-30),(-36,-32),(-24,-32); }	//collisionPoints=(-32,-26),(-38,-32),(-32,-38),(-26,-32); }
+	fixture(tr){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(24,32),(32,24),(38,30),(36,32); }	 		//collisionPoints=(32,38),(26,32),(32,26),(38,32); }	
+	fixture(br){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(32,-24),(24,-32),(30,-38),(32,-36); }	//collisionPoints=(32,-26),(26,-32),(32,-38),(38,-32); }	
+}
+//fixture(tmp){ collisionGroup=dynamics_g1; collisionPoints=(0,8),(-8,0),(0,-8),(8,0); }	 	//collisionPoints=(32,-26),(26,-32),(32,-38),(38,-32); }	
+
+tile(StoneWeak00A){ material=stone; type=Static; life=75; drawCategory=OBJ; colorPalette=Concrete; fixture(){blockFire=true;} }
+tile(StoneWeak00B){ material=stone; type=Static; life=80; drawCategory=OBJ; colorPalette=Concrete; fixture(){blockFire=true;} }
+tile(StoneWeak00C){ material=stone; type=Static; life=85; drawCategory=OBJ; colorPalette=Concrete; fixture(){blockFire=true;} }
+
+tile(SubwayTrain00){ material=metal; }
+
+tile(SurveillanceCamera00A){ type=Static; life=5; objectStrength=50; material=metal; material.blockExplosions=false; doTakeDamage.fire=true; fixture(){ collisionPoints=(-6,-4),(6,-4),(6,4),(-6,4); }}
+
+tile(SuspendedScaffold00){ isCloud=true; cloudRotation=0; absorbProjectile=false; material=wood; material.flammable=false; material.blockExplosions=false; absorbProjectile=false;
+	fixture(background){ collisionGroup=dynamics_g2; kickable=false; punchable=false; mass=8.0kg; projectileHit=false; }
+	fixture(){ isCloud=true; collisionGroup=static_ground; collisionPoints=(-32,-32),(32,-32),(32,-28),(-32,-28); kickableTop=false; mass=4.0kg; }
+}
+
+tile(SwivelChair01){ life=100; gibpressure.total=300kg; canBeMissile=true; missileMarkAsHeavyDebris=true; gibpressure.spike=1200kg; material=cloth; material.flammable=true; clientSync.DAPCC=true; fixture(){ collisionGroup=dynamics_g2; mass=50kg; collisionPoints=(-6.5,-9.5),(6.5,-9.5),(6.5,0),(0,4),(-6.5,0); } }
+tile(SwivelChair02){ life=60; gibpressure.total=300kg; canBeMissile=true; missileMarkAsHeavyDebris=true; gibpressure.spike=1200kg; material=metal; absorbProjectile=false; clientSync.DAPCC=true; fixture(){ collisionGroup=dynamics_g2; mass=50kg; collisionPoints=(-6.5,-9.5),(6.5,-9.5),(6.5,0),(0,4),(-6.5,0); } }
+
+tile(Table00){ adpnc=true; life=75; gibpressure.total=300kg; gibpressure.spike=1200kg; objectStrength=75.0; material=wood; material.flammable=true; doTakeDamage.fire=true; material.blockExplosions=false; material.hit.kick.power=0.7; clientSync.DAPCC=true;
+	fixture() { material.hit.kick.power=0.75; collisionPoints=(-8.5,0),(8.5,0),(8.5,5.5),(-8.5,5.5); mass=8kg; blockFire=false; }
+	fixture(l1) { material.hit.kick.power=0.75; collisionGroup=dynamics_g2; collisionPoints=(-8.5,-5),(-5,-5),(-5,0),(-8.5,0); mass=2kg; blockFire=false; }
+	fixture(l2) { material.hit.kick.power=0.75; collisionGroup=dynamics_g2; collisionPoints=(5,-5),(8.5,-5),(8.5,0),(5,0); mass=2kg; blockFire=false; } }
+
+//	fixture() { collisionPoints=(-7.5,0),(7.5,0),(7.5,5.5),(-7.5,5.5); }
+//	fixture(l1) { collisionGroup=dynamics_g2; collisionPoints=(-7.5,-5.5),(-5.5,-5.5),(-5.5,0),(-7.5,0); }
+//	fixture(l2) { collisionGroup=dynamics_g2; collisionPoints=(5.5,-5.5),(7.5,-5.5),(7.5,0),(5.5,0); } }
+//tile(Table00_B){ fixture(){ collisionGroup=debris; collisionPoints=(-4.5,-5.5),(4.5,5.5),(-4.5,5.5); } }
+
+tile(Teapot00){ material=metal; life=75; punchable=false; canBeMissile=true; missileDamageMax=10|10; kickable=false; objectStrength=50.0; pickupType=instant; pickupRange=10.0; drawCategory=ITM; absorbProjectile=false; gibpressure.total=100kg; gibpressure.spike=200kg; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=10kg; collisionGroup=dynamics_g2; collisionPoints=(-3.5,-7.5),(3.5,-7.5),(3.5,2),(-3.5,2); } fixture(top){ collisionGroup=dynamics_g2; circle=(0,0,3.5); } }
+
+//tile(TileWall00A)  { drawCategory=SLD; objectStrength=0; material.hit.projectile.sound=BulletHitGlass; punchable=false; kickable=false; life=1; absorbProjectile=false; material.blockExplosions=false; type=Static; animation(TileWall00A){ width=8; frameTime=0; } fixture(){ collisionGroup=none; } }
+//tile(TileWall00B)  { drawCategory=SLD; objectStrength=0; material.hit.projectile.sound=BulletHitGlass; punchable=false; kickable=false; life=1; absorbProjectile=false; material.blockExplosions=false; type=Static; animation(TileWall00B){ width=8; frameTime=0; } fixture(){ collisionGroup=none; } }
+//tile(TileWall00C)  { drawCategory=SLD; objectStrength=0; material.hit.projectile.sound=BulletHitGlass; punchable=false; kickable=false; life=1; absorbProjectile=false; material.blockExplosions=false; type=Static; animation(TileWall00C){ width=8; frameTime=0; } fixture(){ collisionGroup=none; } }
+
+tile(TinRoof00){ life=50; material=metal; material.resistance.playerImpact.threshold=2; absorbProjectile=false; type=Static; fixture(){ collisionGroup=static_ground; blockFire=true;} }
+tile(TinRoof00_D){ life=50; material=metal; absorbProjectile=false; type=Dynamic; fixture(){ collisionGroup=debris; collisionPoints=(-7.5,-1.5),(7.5,-1.5),(7.5,1.5),(-7.5,1.5); } }
+
+//tile(TrafficCone){ life=50; material.flammable=true; absorbProjectile=false; material.destroySound=DestroySmall; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(0,6),(-5,-6),(5,-6); } }
+tile(TrainCar00A){ material=metal; colorPalette=BG; drawCategory=SLD; doTakeDamage.fire=false; punchable=false; kickable=false; 
+	fixture(){ mass=200kg; collisionGroup=none; material.blockExplosions=false; blockFire=false; projectileHit=false; }
+	fixture(t){ mass=100kg; collisionGroup=static_ground; collisionPoints=(-52,24),(52,24),(52,32),(-52,32); }
+	fixture(b){ mass=100kg; collisionGroup=static_ground; collisionPoints=(-60,-32),(60,-32),(60,-16),(-60,-16); }
+	fixture(tl){ mass=100kg; collisionGroup=static_ground; collisionPoints=(-60,12),(-52,12),(-52,32),(-60,32); }
+	fixture(tr){ mass=100kg; collisionGroup=static_ground; collisionPoints=(52,12),(60,12),(60,32),(52,32); }
+}
+tile(TrainCarLocomotive00A){ material=metal; colorPalette=BG; drawCategory=SLD; doTakeDamage.fire=false; punchable=false; kickable=false; 
+	fixture(){ mass=100kg; collisionGroup=none; material.blockExplosions=false; blockFire=false; projectileHit=false; }
+	fixture(t){ mass=100kg; collisionGroup=static_ground; collisionPoints=(-52,24),(60,24),(60,32),(-52,32); }
+	fixture(b){ mass=100kg; collisionGroup=static_ground; collisionPoints=(-60,-32),(60,-32),(60,-16),(-60,-16); }
+	//fixture(tr){ mass=100kg; collisionGroup=static_ground; collisionPoints=(52,20),(60,20),(60,32),(52,32); }
+	fixture(br){ mass=100kg; collisionGroup=static_ground; collisionPoints=(52,-32),(60,-32),(60,-2),(52,-2); }
+	fixture(tl){ mass=100kg; collisionGroup=static_ground; collisionPoints=(-60,12),(-52,12),(-52,32),(-60,32); }
+}
+
+tile(TrainingTarget00){ life=1; material=wood; material.flammable=true; fixture(){ collisionGroup=none; collisionPoints=(-6,-8),(6,-8),(6,8),(-6,8); } }
+
+tile(Trashbag00){
+	life=100;
+	punchable=true;
+	kickable=true;
+	gibpressure.total=100kg;
+	gibpressure.spike=400kg;
+	material=paper;
+	freeRotation=true;
+	canBeMissile=true;
+	missileDamageMax=40;
+	material.blockExplosions=false;
+	Material.Resistance.Impact.Modifier=0.1;
+	clientSync.DAPCC=true;
+	absorbProjectile=true;
+	pickupType=instant;
+	pickupRange=10.0;
+	drawCategory=ITM;
+	ImpactEffect=ImpactDefault;
+	fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-5.5,-5.5),(5.5,-5.5),(5.5,1.5),(-5.5,1.5); }}
+//Done this one
+tile(Trashcan00){
+	material.hit.kick.power=1.5;
+	life=100000;
+	punchable=true;
+	kickable=true;
+	canBeMissile=true;
+	missileDamageMax=80; 
+	gibpressure.total=100kg;
+	gibpressure.spike=400kg;
+	material=metal;
+	material.blockExplosions=false;
+	clientSync.DAPCC=true;
+	fixture(){ collisionGroup=dynamics_g1; collisionPoints=(-5.5,-6.5),(5.5,-6.5),(5.5,6.5),(-5.5,6.5); } }
+//Done this one
+tile(Trashcan00_D){
+	life=90;
+	punchable=true;
+	kickable=true;
+	canBeMissile=true;
+	missileDamageMax=80;
+	gibpressure.total=100kg;
+	gibpressure.spike=400kg;
+	material=metal;
+	material.blockExplosions=false;
+	clientSync.DAPCC=true; fixture(){ collisionPoints=(-5.5,-6.5),(5.5,-6.5),(5.5,6.5),(-5.5,6.5); } }
+//Done this one
+tile(Trashcan00Lid){
+	life=100000;
+	punchable=true;
+	kickable=true;
+	canBeMissile=true;
+	missileDamageMax=200;
+	gibpressure.total=100kg;
+	gibpressure.spike=400kg;
+	Material.Resistance.Impact.Modifier=0.1;
+	material=metal;
+	material.blockExplosions=false;
+	clientSync.DAPCC=true;
+	absorbProjectile=true;
+	pickupType=instant;
+	pickupRange=10.0;
+	drawCategory=ITM;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=2.5kg; collisionGroup=dynamics_g1; collisionPoints=(-5.5,-2),(5.5,-2),(5.5,0),(-5.5,0); } }
+//tile(Trashcan01){ life=200; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-4.5,-7.5),(4.5,-7.5),(4.5,5.5),(2.5,7.5),(-2.5,7.5),(-4.5,5.5); }}
+
+tile(Truck00B){ material=metal; drawCategory=FG;
+fixture(){ mass=400kg; collisionPoints=(-24,0),(24,0),(24,8),(-24,8); }
+fixture(tl){  mass=50kg; collisionGroup=dynamics_g1; collisionPoints=(-24,8),(-22,8),(-22,12),(-24,12); }
+fixture(tr){  mass=50kg; collisionGroup=dynamics_g1; collisionPoints=(22,8),(24,8),(24,12),(22,12); }
+fixture(bl){  mass=100kg; collisionGroup=dynamics_g1; collisionPoints=(-18,-7.5),(-16,-7.5),(-16,4),(-18,4); }
+fixture(br){  mass=100kg; collisionGroup=dynamics_g1; collisionPoints=(16,-7.5),(18,-7.5),(18,4),(16,4); } }
+tile(TruckWheel){ drawCategory=FG; clientSync.DAPCC=true; fixture(){ collisionGroup=static_ground; mass=125kg; circle=(0,0,6.5); }}
+
+//tile(Vase00){ life=5; material=ceramic; objectStrength=5; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-3.5,7.5),(-7.5,3.5),(-3.5,-7.5),(3.5,-7.5),(7.5,3.5),(3.5,7.5); }}
+tile(Van00){ material=metal; instaGibPlayer=true;
+	fixture(){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(-15.5,-10.5),(15.5,-10.5),(15.5,15.5),(-15.5,15.5); mass=200kg; } 
+	fixture(lwheel){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(-14.5,-15.5),(-10.5,-15.5),(-10.5,-10.5),(-14.5,-10.5); mass=20kg; }
+	fixture(rwheel){ collisionGroup=dynamics_g1; blockFire=true; collisionPoints=(10.5,-14.5),(14.5,-15.5),(14.5,-10.5),(10.5,-10.5); mass=20kg; }}
+
+tile(WarningLamp00){ material=glass; type=Static; animation(WarningLamp00){ width=8; frameTimes=50; } fixture() { collisionGroup=none; collisionPoints=(-4,0),(4,0),(4,4),(-4,4); } }
+tile(WarningLamp00Off){ material=glass; type=Static; fixture() { collisionGroup=none; } }
+tile(WarningLamp01){ type=Static; material=glass; animation(WarningLamp01){ width=12; frameTimes=50; } }
+tile(WarningLamp01Off){ type=Static; material=glass; type=Static; }
+
+tile(WaterTrough00){ drawCategory=FG; type=Static; material=wood;  fixture(){ collisionPoints=(-12,-8),(12,-8),(12,0),(-12,0); } fixture(l){ collisionGroup=static_ground; collisionPoints=(-12,-8),(-8,-8),(-8,0),(-12,8); } fixture(r){ collisionGroup=static_ground; collisionPoints=(8,-8),(12,-8),(12,8),(8,0); } }
+
+tile(WindMill00){ life=200;  fixture(){ blockFire=true; collisionPoints=(-12,-24),(12,-24),(24,-12),(24,12),(12,24),(-12,24),(-24,12),(-24,-12); }}
+tile(WindMillSail00){ drawCategory=SLD; life=25; doTakeDamage.fire=true; material.blockExplosions=true; material.flammable=true; fixture(){ blockFire=true; collisionPoints=(-4,-16),(4,-16),(4,20),(-4,20); mass=1kg; }}
+tile(WindMillSail00_D){ drawCategory=SLD; life=100; absorbProjectile=false; material.blockExplosions=true; doTakeDamage.fire=true; material.flammable=true; fixture(){ blockFire=true; collisionPoints=(-2,-16),(4,-16),(4,20),(-2,20); mass=0.5kg; }}
+tile(WindMillSail00_D2){ drawCategory=SLD; projectileHit=false; material.blockExplosions=false; fixture(){ blockFire=false; collisionGroup=none; mass=0.1kg; }}
+
+//tile(WheelBlock01){ type=Static; life=5; fixture(){ collisionPoints=(-6,3),(6,-3),(6,3); } }
+
+tile(WiringTube00A){ drawCategory=SLD; life=15; absorbProjectile=false; fixture(){ collisionGroup=dynamics_g2; } }
+tile(WiringTube00A_D){ drawCategory=SLD; absorbProjectile=false; fixture(){ collisionGroup=dynamics_g2; } }
+tile(WiringTube00B){ drawCategory=SLD; absorbProjectile=false; animation(WiringTube00B){ width=8; frameTimes=200,25,50,25; } fixture(){ collisionGroup=dynamics_g2; } }
+
+tile(WoodPlat01WeakA){ type=Static; life=25; breakOnDive=true; colorPalette=Wood; sizeable=H; gibpressure.total=50kg; gibpressure.spike=200kg; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; objectStrength=25.0; isCloud=true; absorbProjectile=false; fixture(){ collisionGroup=static_ground; collisionPoints=(-4,0),(4,0),(4,4),(-4,4); }}
+tile(WoodPlat01WeakB){ type=Static; life=25; breakOnDive=true; colorPalette=Wood; sizeable=H; gibpressure.total=50kg; gibpressure.spike=200kg; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; objectStrength=25.0; isCloud=true; absorbProjectile=false; fixture(){ collisionGroup=static_ground; collisionPoints=(-8,0),(8,0),(8,4),(-8,4); }}
+
+//tile(WoodDoor00){life=100; type=Static; material=wood; material.flammable=true;
+//	animation(WoodDoor00){ width=32; frameTime=0; }
+//	fixture(){ blockFire=true; collisionPoints=(-4,-16),(4,-16),(4,16),(-4,16); }
+//}
+	
+tile(WoodAwning00A){ drawCategory=SLD; type=Static; sizeable=V; projectileHit=false; fixture(){ collisionGroup=none; }}
+tile(WoodAwning00B){ drawCategory=SLD; type=Static; life=75; material=wood; material.blockExplosions=true; material.flammable=true; doTakeDamage.fire=true; fixture(){ blockFire=true; collisionGroup=static_ground; collisionPoints=(-24,-8),(24,4),(24,8),(-24,-4); } }
+tile(WoodAwning00B_D){ drawCategory=SLD; type=Static; material=wood; material.blockExplosions=true; material.flammable=true; doTakeDamage.fire=true; fixture(){ blockFire=true; collisionPoints=(-24,-8),(-16,-6),(-16,-2),(-24,-4); } fixture(a){ collisionGroup=static_ground; blockFire=true; collisionPoints=(16,2),(24,4),(24,8),(16,6); } }
+	
+tile(WoodBarrel00){ material=wood; life=75; gibpressure.total=400kg; gibpressure.spike=1600kg; material.blockExplosions=false; material.flammable=true; doTakeDamage.fire=true; fixture(){ mass=75kg; collisionPoints=(-5.5,7.5),(-7.5,4.5),(-7.5,-4.5),(-5.5,-7.5),(5.5,-7.5),(7.5,-4.5),(7.5,4.5),(5.5,7.5); }}
+tile(WoodBarrel01){ material=wood; life=150; gibpressure.total=400kg; gibpressure.spike=1600kg; material.blockExplosions=false; material.flammable=true; doTakeDamage.fire=true; fixture(){ mass=300kg; circle=(0,0,11.5); }}
+tile(WoodLattice00A){ material=wood; type=Static; material.destroySound=DestroySmall; material.destroyEffect=BulletHitWood; material.resistance.projectile.modifier=99.0; life=5; gibpressure.enableoneway=true; material.flammable=true; gibpressure.total=80kg; gibpressure.spike=400kg; absorbProjectile=false; material.blockExplosions=false; sizeable=N; drawCategory=OBJ; doTakeDamage.fire=true; material.resistance.fire.modifier=1; breakOnDive=true; breakOnStagger=true; fixture() { collisionGroup=static_ground; collisionPoints=(-2,-4),(2,-4),(2,4),(-2,4); blockFire=true; } }
+tile(WoodRailing00){ type=Static; life=10; absorbProjectile=true; material=wood; material.flammable=true; material.blockExplosions=false; doTakeDamage.fire=true; breakOnDive=true; breakOnStagger=true; fixture(){ collisionPoints=(-3,-8),(3,-8),(3,6),(-3,6); }}
+tile(WoodSupport00A){ type=Static; life=5; material=wood; material.flammable=true; material.blockExplosions=false; projectileHit=true; doTakeDamage.fire=true; fixture(){ collisionPoints=(-5.5,-5.5),(5.5,-5.5),(5.5,5.5),(-5.5,5.5); }  }
+tile(WoodSupport00B){ type=Static; material=wood; material.flammable=true; projectileHit=false; doTakeDamage.fire=true; fixture() { collisionGroup=none; collisionPoints=(-3.5,-4),(3.5,-4),(3.5,4),(-3.5,4); } }
+
+tile(SSSFlag00A){ drawCategory=BG; type=Static; life=50; material=cloth; material.flammable=true; material.blockExplosions=false; absorbProjectile=false; doTakeDamage.fire=true; kickable=false; punchable=false; fixture(){ collisionGroup=none; } } 
+tile(SSSFlag00A_D){ drawCategory=BG; type=Static; projectileHit=false; punchable=false; kickable=false; fixture(){ collisionGroup=none; } }
+
+//Somecutcontentpastehere
+tile(LightBulb00){ life=1; material=glass; absorbProjectile=false; material.blockExplosions=false; fixture(){ collisionGroup=none; collisionPoints=(-1.5,-2.5),(1.5,-2.5),(1.5,2),(-1.5,2); } }
+
+tile(LightSign00E){ type=Static; life=100; material=metal; doTakeDamage.fire=true; material.blockExplosions=false; fixture(){ collisionPoints=(-12,4),(12,4),(12,12),(-12,12); blockFire=true; } fixture(a){ collisionGroup=dynamics_g1; collisionPoints=(-12,-4),(8,-4),(8,4),(-12,4); blockFire=true; } fixture(b){ collisionGroup=dynamics_g1; collisionPoints=(-12,-12),(12,-12),(12,-4),(-12,-4); blockFire=true; } }
+tile(LightSign00E_D){ life=200; type=Dynamic; material=metal; material.blockExplosions=false; fixture(){blockFire=true;} }
+tile(LightSign00H){ type=Static; life=100; material=metal; doTakeDamage.fire=true; material.blockExplosions=false; fixture(){blockFire=true;} }
+tile(LightSign00H_D){ life=200; type=Dynamic; material=metal; material.blockExplosions=false; fixture(){blockFire=true;} }
+tile(LightSign00L){ type=Static; life=100; material=metal; doTakeDamage.fire=true; material.blockExplosions=false; fixture(){ collisionPoints=(-12,-12),(-4,-12),(-4,12),(-12,12); blockFire=true; } fixture(a){ collisionGroup=dynamics_g1; collisionPoints=(-4,-12),(12,-12),(12,-4),(-4,-4); blockFire=true; } }
+tile(LightSign00L_D){ life=200; type=Dynamic; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-12,-12),(-4,-12),(-4,12),(-12,12); blockFire=true; } fixture(a){ collisionGroup=dynamics_g1; collisionPoints=(-4,-12),(12,-12),(12,-4),(-4,-4); blockFire=true; } }
+tile(LightSign00O){ type=Static; life=100; material=metal; doTakeDamage.fire=true; material.blockExplosions=false; fixture(){ circle=(0,0,12); blockFire=true; }}
+tile(LightSign00O_D){ life=200; type=Dynamic; material=metal; material.blockExplosions=false; fixture(){ circle=(0,0,12); blockFire=true; }}
+tile(LightSign00T){ type=Static; life=100; material=metal; doTakeDamage.fire=true; material.blockExplosions=false; fixture(){ collisionPoints=(-12,4),(12,4),(12,12),(-12,12); blockFire=true; } fixture(a){ collisionGroup=dynamics_g1; collisionPoints=(-4,-12),(4,-12),(4,4),(-4,4); blockFire=true; } }
+tile(LightSign00T_D){ life=200; type=Dynamic; material=metal; material.blockExplosions=false; fixture(){ collisionPoints=(-12,4),(12,4),(12,12),(-12,12); blockFire=true; } fixture(a){ collisionGroup=dynamics_g1; collisionPoints=(-4,-12),(4,-12),(4,4),(-4,4); blockFire=true; } }
+tile(LightSign00Debris1){ life=75; type=Dynamic; material=metal; material.blockExplosions=false; fixture(){ collisionGroup=dynamics_g2; collisionPoints=(-5.5,-3.5),(5.5,-3.5),(5.5,3.5),(-5.5,3.5); blockFire=false; } }
+//Some CutTiles of LightSign paste here
+tile(XmasPresent00){ adpnc=true; life=1; material=cardboard; objectStrength=50.0; material.resistance.impact.threshold=5; gibpressure.total=40kg; gibpressure.spike=160kg; material.flammable=true; doTakeDamage.fire=true; fixture(){ collisionPoints=(-5.5,-5.5),(5.5,-5.5),(5.5,3),(-5.5,3); } }
+tile(XmasTree){ life=200; material=wood; material.flammable=true; material.blockExplosions=false; absorbProjectile=false; fixture(){ collisionGroup=debris; collisionPoints=(-16,-24),(16,-24),(0,24); } fixture(foot){ collisionGroup=debris; collisionPoints=(-4,-32),(4,-32),(4,-24),(-4,-24);} }
+tile(XmasTree_D){ absorbProjectile=false; material=wood; material.blockExplosions=false; doTakeDamage.fire=true; fixture(){ collisionGroup=debris; collisionPoints=(-12,-24),(12,-24),(0,24); } fixture(foot){ collisionGroup=debris; collisionPoints=(-4,-32),(4,-32),(4,-24),(-4,-24);} }
+// *** DEBRIS ***
+defaultTile(default_tile) {
+	drawCategory=DEB;
+	absorbProjectile=false; // don't let debris absorb projectiles
+	type=Dynamic;
+	gibpressure.total=40kg; 
+	gibpressure.spike=160kg;
+	fixture() {
+		collisionGroup=debris;
+		collisionPoints=(-4,-1),(4,-1),(4,1),(-4,1);
+		blockFire=false;
+	}
+	
+	colorPalette=palNone;
+	doTakeDamage.fire=true;
+}
+tile(Giblet00){ life=100; material=flesh; material.blockExplosions=false; material.flammable=false; ImpactSound=ImpactFlesh; fixture() { mass=4kg; collisionPoints=(-2,-2),(2,-2),(2,2),(-2,2); } }
+tile(Giblet01){ life=100; material=flesh; material.blockExplosions=false; material.flammable=false; ImpactSound=ImpactFlesh; fixture() { mass=4kg; collisionPoints=(-3,-2),(3,-2),(3,2.5),(-3,2.5); } }
+tile(Giblet02){ life=100; material=flesh; material.blockExplosions=false; material.flammable=false; ImpactSound=ImpactFlesh; fixture() { mass=4kg; collisionPoints=(-3,1),(0,-3.5),(2,-3.5),(2,1),(-1,3.5); } }
+tile(Giblet03){ life=100; material=flesh; material.blockExplosions=false; material.flammable=false; ImpactSound=ImpactFlesh; fixture() { mass=4kg; collisionPoints=(-2,-2),(2,-2),(2,2),(-2,2); } }
+tile(Giblet04){ life=100; material=flesh; material.blockExplosions=false; material.flammable=false; ImpactSound=ImpactWood; fixture() { mass=4kg; collisionPoints=(-2.5,-2.5),(2.5,-2.5),(2.5,2.5),(-2.5,2.5); } }
+tile(StoneDebris00A){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Stone; 
+	life=100000; 
+	objectStrength=100;
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	fixture(){ mass=0.25kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); } }
+tile(StoneDebris00B){ 
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Stone; 
+	life=100000; 
+	objectStrength=100;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	fixture(){ mass=0.25kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); } }
+tile(StoneDebris00C){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Stone; 
+	life=100000; 
+	objectStrength=100;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	fixture(){ mass=0.25kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); } }
+tile(StoneDebris00D){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	Material.Resistance.Impact.Threshold=999999;
+	material=Stone; 
+	life=100000;
+	objectStrength=100;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false; 
+	fixture(){ mass=0.25kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); } }
+tile(StoneDebris00E){ 
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	Material.Resistance.Impact.Threshold=999999;
+	material=Stone; 
+	life=100000; 
+	objectStrength=100;
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); } }
+
+//Done this one
+tile(MetalDebris00A){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Metal;
+	life=100000;
+	objectStrength=100;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=5kg; collisionGroup=dynamics_g2; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+
+//Done this one
+tile(MetalDebris00B){
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Metal;
+	life=100000;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=dynamics_g2; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+//Done this one
+tile(MetalDebris00C){
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Metal;
+	life=100000;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=dynamics_g2; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+//Done this one
+tile(MetalDebris00D){
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Metal;
+	life=100000;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=dynamics_g2; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+
+tile(MetalDebris00E){
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Metal;
+	life=100000;
+	Material.Resistance.Impact.Threshold=999999;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactMetal;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=dynamics_g2; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+
+tile(ItemDebrisDark00){ 
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	material=Metal; 
+	material.resistance.impact.threshold=999999;
+	material.flammable=true; 
+	life=100000; 
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false; 
+	ImpactSound=ImpactMetal; 
+	ImpactEffect=ImpactDefault; 
+	fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisDark01){ 
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	Material.Resistance.Impact.Threshold=999999;
+	material=Metal; 
+	material.flammable=true; 
+	life=100000; 
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; 
+	fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisShiny00){ 
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	Material.Resistance.Impact.Threshold=999999;
+	material=Metal; 
+	material.flammable=true; 
+	life=100000; 
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false; 
+	ImpactSound=ImpactMetal; 
+	ImpactEffect=ImpactDefault; 
+	fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisShiny01){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisWood00){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisStockDark00){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisStockWood00){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisBazooka00){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisFlamethrower00){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(ItemDebrisFlamethrower01){ material=Metal; material.flammable=true; life=50; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactMetal; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(WoodBarrelDebris00A){ 
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	Material.Resistance.Impact.Threshold=999999;
+	material=metal; 
+	life=999; 
+	colorPalette=BG; 
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	ImpactSound=ImpactMetal; 
+	ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionGroup=debris; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(WoodBarrelDebris00B){ 
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	Material.Resistance.Impact.Threshold=999999;
+	material=wood; 
+	material.flammable=true; 
+	life=999; 
+	colorPalette=BG; 
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	ImpactSound=ImpactWood; 
+	ImpactEffect=ImpactDefault; 
+	fixture(){ mass=5kg; collisionGroup=debris; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(WoodBarrelDebris00C){ 
+	material.hit.kick.power=1.5;
+	objectStrength=100;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	Material.Resistance.Impact.Threshold=999999;
+	material=wood; 
+	material.flammable=true; 
+	life=999; 
+	colorPalette=BG; 
+	material.destroySound=DestroySmall; 
+	material.blockExplosions=false; 
+	ImpactSound=ImpactWood; 
+	ImpactEffect=ImpactDefault; 
+	fixture(){ mass=5kg; collisionGroup=debris; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+
+tile(WoodDebris00A){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|50;
+	material=wood;
+	material.flammable=true;
+	life=999; 
+	Material.Resistance.Impact.Threshold=999999;
+	colorPalette=BG;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=debris; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+
+tile(WoodDebris00B){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|50;
+	material=wood;
+	material.flammable=true;
+	life=999;
+	Material.Resistance.Impact.Threshold=999999;
+	colorPalette=BG;
+	material.destroySound=DestroySmall;
+	material.blockExplosions=false;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=debris; collisionPoints=(-4,0),(-3,-1.5),(3,-1.5),(4,0),(3,1.5),(-3,1.5); }  }
+tile(WoodDebris00C){ material=wood; material.flammable=true; life=20; colorPalette=BG; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(WoodDebris00D){ material=wood; material.flammable=true; life=20; colorPalette=BG; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+tile(WoodDebris00E){ material=wood; material.flammable=true; life=20; colorPalette=BG; material.destroySound=DestroySmall; material.blockExplosions=false; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=5kg; collisionPoints=(-3,0),(-2,-1.5),(2,-1.5),(3,0),(2,1.5),(-2,1.5); }  }
+
+tile(WoodDebrisTable00A){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	life=9999;
+	Material.Resistance.Impact.Threshold=999999;
+	material=wood;
+	material.flammable=true;
+	material.blockExplosions=false;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=debris; collisionGroup=debris; collisionPoints=(-4.5,-5.5),(4.5,5.5),(-4.5,5.5); } }
+tile(WoodDebrisTable00B){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	missileDamageMax=11|80;
+	life=9999;
+	material=wood;
+	material.flammable=true;
+	material.blockExplosions=false;
+	ImpactSound=ImpactWood;
+	ImpactEffect=ImpactDefault;
+	fixture(){ mass=0.25kg; collisionGroup=debris; collisionPoints=(4.5,5.5),(-4.5,5.5),(4.5,-5.5); } } //End
+
+//End debris tiles
+
+tile(ChairLeg){ life=20; canBeMissile=true; missileDamageMax=9; punchable=false; kickable=false; pickupType=instant; pickupRange=10.0; drawCategory=ITM; material=wood; material.flammable=true; material.blockExplosions=false; ImpactSound=ImpactWood; ImpactEffect=ImpactDefault; fixture(){ mass=6kg; collisionGroup=debris; collisionPoints=(-5.5,-1),(5.5,-1),(5.5,1),(-5.5,1); } }
+
+//Done this one
+tile(GlassShard00A){
+	material.hit.kick.power=1.5;
+	canBeMissile=true;
+	life=100000;
+	missileDamageMax=80; 
+	material=glass;
+	Material.Resistance.Impact.Threshold=999999;
+	Material.BlockExplosions=false;
+	material.destroySound=DestroyGlassSmall;
+	ImpactSound=GlassShard;
+	fixture(){ mass=0.1kg; collisionGroup=debris; collisionPoints=(0,2),(-2,-2),(2,-2); } }
+
+defaultTile(default_tile) {
+	gibpressure.total=0kg; 
+	gibpressure.spike=0kg;
+}
