@@ -1,0 +1,595 @@
+/*
+*	authur: Ebomb09
+*	description: Drone Battle
+*	mapmodes: Versus, Custom, Survival, Campaign
+*/
+public static Events.UpdateCallback e_OnUpdate = null;
+public static List<Drone> Drones = new List<Drone>();
+public static Vector2 SafePosition = new Vector2(0, 1000);
+public const float maxVelocity = 5.0f;
+public const float maxAccelerate = 0.5f;
+public const float maxTurnSpeed = 2.0f;
+public const string defaultWeapon = "WpnPistol";
+public const WeaponItem defaultWeaponItem = WeaponItem.PISTOL;
+
+public static Dictionary<WeaponItem, int> WeaponFireRates = new Dictionary<WeaponItem, int>(){
+	{WeaponItem.PISTOL, 50},
+	{WeaponItem.SMG, 10},
+	{WeaponItem.BAZOOKA, 100},
+	{WeaponItem.GRENADE_LAUNCHER, 100},
+	{WeaponItem.FLAREGUN, 75},
+	{WeaponItem.MP50, 12},
+	{WeaponItem.UZI, 7},
+	{WeaponItem.SILENCEDUZI, 7},
+	{WeaponItem.SNIPER, 100},
+	{WeaponItem.SHOTGUN, 100},
+	{WeaponItem.DARK_SHOTGUN, 100},
+	{WeaponItem.BOW, 75},
+	{WeaponItem.GRENADES, 30},
+	{WeaponItem.MOLOTOVS, 30},
+	{WeaponItem.FLAMETHROWER, 10},
+	{WeaponItem.CARBINE, 50},
+};
+
+public static Dictionary<WeaponItem, string> WeaponFireSound = new Dictionary<WeaponItem, string>(){
+	{WeaponItem.PISTOL, "Pistol"},
+	{WeaponItem.SMG, "SMG"},
+	{WeaponItem.BAZOOKA, "Bazooka"},
+	{WeaponItem.GRENADE_LAUNCHER, "GLauncher"},
+	{WeaponItem.FLAREGUN, "Flaregun"},
+	{WeaponItem.MP50, "MP50"},
+	{WeaponItem.UZI, "Uzi"},
+	{WeaponItem.SILENCEDUZI, "SilencedUzi"},
+	{WeaponItem.SNIPER, "Sniper"},
+	{WeaponItem.SHOTGUN, "Shotgun"},
+	{WeaponItem.DARK_SHOTGUN, "RiotShotgun"},
+	{WeaponItem.BOW, "BowShoot"},
+	{WeaponItem.GRENADES, "GrenadeThrow"},
+	{WeaponItem.MOLOTOVS, "MolotovThrow"},
+	{WeaponItem.FLAMETHROWER, "Flamethrower"},
+	{WeaponItem.CARBINE, "Carbine"},
+};
+
+public static void OnStartup(){
+
+	/*
+		Construct Safe Region
+	*/
+	IObject Area = Game.CreateObject("AreaTrigger", SafePosition);
+	Area.CustomID = "SAFE_REGION";
+
+	IObject tr = Game.CreateObject("InvisibleBlock", SafePosition + new Vector2(-8, 14));
+	tr.SetSizeFactor(new Point(3, 1));
+
+	IObject bd = Game.CreateObject("InvisibleBlock", SafePosition + new Vector2(-8, -14));
+	bd.SetSizeFactor(new Point(3, 1));
+	
+	IObject ld = Game.CreateObject("InvisibleBlock", SafePosition + new Vector2(-8, 6));
+	ld.SetSizeFactor(new Point(1, 3));	
+	
+	IObject rd = Game.CreateObject("InvisibleBlock", SafePosition + new Vector2(8, 6));
+	rd.SetSizeFactor(new Point(1, 3));
+	
+	IObjectAlterCollisionTile alter = (IObjectAlterCollisionTile)Game.CreateObject("AlterCollisionTile", SafePosition);
+	alter.SetTargetObjects( new IObject[]{ tr, bd, ld, rd } );
+	alter.SetDisablePlayerMelee(true);
+	alter.SetDisableProjectileHit(true);
+	
+	/*
+		Set Configured Weapons To Only Spawn
+	*/
+	Dictionary<short, int> WeaponSpawnChances = new Dictionary<short, int>();
+	foreach(KeyValuePair<WeaponItem, int> pt in WeaponFireRates){
+		
+		if(pt.Key != defaultWeaponItem)
+			WeaponSpawnChances.Add( (short)pt.Key, Game.GetWeaponSpawnChances()[(short)pt.Key]);
+	}
+	Game.ClearWeaponSpawnChances();
+	Game.UpdateWeaponSpawnChances(WeaponSpawnChances);
+
+	Game.SetAllowedCameraModes(CameraMode.Static);
+
+	/*
+		Future, Allow Bots To AI Control Drones?
+	*/
+	foreach(IPlayer ply in Game.GetPlayers()){
+		
+		if(!ply.IsBot){
+			Drones.Add(new Drone(ply));
+		}else{
+			ply.Remove();
+		}
+	}
+
+	/*
+		Set Mode To Custom
+	*/
+	Game.AutoScoreConditionEnabled = false;
+	Game.AutoVictoryConditionEnabled = false;
+	
+	e_OnUpdate = Events.UpdateCallback.Start(OnUpdate);
+}
+
+public static void CheckWinner(){
+	/*
+		Check For Win Conditions
+		when NOT survival
+	*/
+	if(!Game.IsGameOver && Game.SurvivalWave == 0){
+		//Find Remaning Players
+		Drone[] Left = Drones.Where(x => !x.Dead).ToArray();
+	
+		//Check Number Of Players
+		if(Left.Length == 0){
+			Game.SetGameOver("Nobody Wins!");
+		
+		//One? Obvious Winner
+		}else if(Left.Length == 1){
+			
+			if(Left[0].Team == PlayerTeam.Independent){
+				Game.SetGameOver(Left[0].Source.Name + " Wins!");
+				
+				if(Left[0].Source.GetUser() != null)
+					Left[0].Source.GetUser().IncreaseScore();
+				
+			}else{
+				Game.SetGameOver("Team " + (int)Left[0].Team + " Wins!");
+
+				foreach(Drone dr in Drones){
+	
+					if(dr.Source.GetUser() != null && dr.Team == Left[0].Team)
+						dr.Source.GetUser().IncreaseScore();
+				}		
+			}
+			
+		//Find If Rest Are Same Team
+		}else{
+			int WinTeam = -1;		
+
+			foreach(Drone dr in Left){
+				
+				//Win Team Check Not Set
+				if(WinTeam == -1){
+					WinTeam = (int)dr.Team;
+					
+				//Check Same Team
+				}else if((int)dr.Team != WinTeam){
+					WinTeam = -1;
+					break;
+				}
+			}
+			
+			if(WinTeam != -1 && WinTeam != 0){
+				Game.SetGameOver("Team " + WinTeam + " Wins!");		
+				
+				foreach(Drone dr in Drones){
+					
+					if(dr.Source.GetUser() != null && (int)dr.Team == WinTeam)
+						dr.Source.GetUser().IncreaseScore();
+				}				
+			}
+		}
+	}
+}
+
+public static void OnUpdate(float t){
+	
+	foreach(Drone dr in Drones){
+		dr.Step();
+	}
+	
+	foreach(IObjectWeaponItem wpn in Game.GetObjects<IObjectWeaponItem>()){
+		
+		if(wpn.CustomID == ""){		
+			IObject obj = Game.SpawnWeaponItem(wpn.WeaponItem, wpn.GetWorldPosition(), true, 0);
+			obj.CustomID = "_NEW_";
+			wpn.Remove();
+		}
+	}
+}
+
+public class Drone{
+	public IPlayer Source;
+	public PlayerTeam Team;
+	
+	IObjectStreetsweeper Object;
+	IObjectWeldJoint WeldJoint;
+	IObjectText NamePlate;
+	
+	float realAngle = 0;
+	Vector2 AimAngle = new Vector2(1, 0);
+	Vector2 AimRatio = new Vector2(1, 0);
+	IObjectText CrossHair;
+	
+	struct wpn_item{
+		public IObjectWeaponItem Object;
+		public string Name;
+		public WeaponItem WeaponItem;
+		public int Ammo;
+		public int MaxAmmo;
+		public int Pellets;
+		public int Reload;
+		public int Timer;
+	}
+	wpn_item Item;
+	
+	int IdleTimer = 0;
+	
+	bool actPressed = false;
+	
+	public bool Dead = false;
+	
+	public Drone(IPlayer _src){
+		Source = _src;
+		Team = _src.GetTeam();
+		
+		_src.SetInputMode(PlayerInputMode.Enabled);
+		_src.SetTeam(PlayerTeam.Team1);
+		_src.SetNametagVisible(false);
+		_src.SetStatusBarsVisible(false);
+		
+		PlayerModifiers mods = _src.GetModifiers();
+		mods.MaxHealth = 60;
+		mods.EnergyConsumptionModifier = 0;
+		mods.EnergyRechargeModifier = 0;
+		_src.SetModifiers(mods);
+		
+		Spawn();
+		_src.SetWorldPosition(Game.GetSingleObjectByCustomID("SAFE_REGION").GetWorldPosition());
+	}
+	
+	public void Spawn(){
+		Object = (IObjectStreetsweeper)Game.CreateObject("StreetSweeper", Source.GetWorldPosition());
+		Object.SetMovementType(StreetsweeperMovementType.Stationary);
+		Object.SetWeaponType(StreetsweeperWeaponType.None);
+		Object.SetOwnerTeam(PlayerTeam.Team1);
+		Object.SetShowNamePlate(false);
+		
+		NamePlate = (IObjectText)Game.CreateObject("Text", Source.GetWorldPosition() + new Vector2(0, 24));
+		NamePlate.SetBodyType(BodyType.Dynamic);
+		NamePlate.SetTextAlignment(TextAlignment.Middle);
+		NamePlate.SetText(Source.Name);
+		switch(Team){			
+			case PlayerTeam.Team1:
+				NamePlate.SetTextColor(Color.Blue);
+			break;			
+			case PlayerTeam.Team2:
+				NamePlate.SetTextColor(Color.Red);
+			break;			
+			case PlayerTeam.Team3:
+				NamePlate.SetTextColor(Color.Green);
+			break;			
+			case PlayerTeam.Team4:
+				NamePlate.SetTextColor(Color.Yellow);
+			break;
+		}
+		
+		CrossHair = (IObjectText)Game.CreateObject("Text", Object.GetWorldPosition() + new Vector2(15, -8));
+		CrossHair.SetBodyType(BodyType.Dynamic);
+		CrossHair.SetTextAlignment(TextAlignment.Middle);
+		CrossHair.SetText("+");
+		
+		WeldJoint = (IObjectWeldJoint)Game.CreateObject("WeldJoint", Source.GetWorldPosition());
+		WeldJoint.AddTargetObject(Object);
+		WeldJoint.AddTargetObject(NamePlate);
+		WeldJoint.AddTargetObject(CrossHair);
+		
+		ReplaceWeapon((IObjectWeaponItem)Game.CreateObject(defaultWeapon));
+	}
+	
+	public void Remove(){
+		Dead = true;
+		
+		//Save ammo and stats to weapon before dying
+		ReplaceWeapon((IObjectWeaponItem)Game.CreateObject(defaultWeapon));
+		
+		if(Object != null)
+			Object.Destroy();
+		
+		if(CrossHair != null)
+			CrossHair.Remove();		
+		
+		if(NamePlate != null)
+			NamePlate.Remove();
+		
+		if(Item.Object != null)
+			Item.Object.Remove();
+		
+		if(Source != null)
+			Source.Destroy();
+		
+		
+		CheckWinner();		
+	}
+	
+	public void ReplaceWeapon(IObjectWeaponItem wpn, bool fix = false){
+		
+		/*
+			Drop Non Empty Weapons
+		*/
+		if(Item.Object != null){
+			WeldJoint.RemoveTargetObject(Item.Object);
+			
+			if(Item.Ammo > 0 && Item.Ammo != -1){
+				Item.Object.CustomID = Item.Ammo.ToString();
+				Item.Object.CustomID += "," + Item.Pellets.ToString();
+				Item.Object.CustomID += "," + Item.MaxAmmo.ToString();
+				
+			}else{
+				Item.Object.Remove();
+			}
+		}
+		
+		Item.Object = wpn;
+		Item.Object.SetWorldPosition(Object.GetWorldPosition() + new Vector2(0, -8));
+		
+		/*
+			Save Ammo in CustomID
+		*/
+		int ammo = 0;
+		int mag = 0;
+		int maxammo = 0;
+		if(Item.Object.CustomID.Split(',').Length >= 3 && Int32.TryParse(Item.Object.CustomID.Split(',')[0], out ammo) && Int32.TryParse(Item.Object.CustomID.Split(',')[1], out mag) && Int32.TryParse(Item.Object.CustomID.Split(',')[2], out maxammo)){
+			Item.Ammo = ammo;
+			Item.Pellets = mag;
+			Item.MaxAmmo = maxammo;
+		
+		/*
+			Test Give To Find Default Ammo
+		*/
+		}else{
+			Source.GiveWeaponItem(Item.Object.WeaponItem);
+			
+			if(Item.Object.WeaponItemType == WeaponItemType.Rifle){
+				Item.Ammo = Source.CurrentPrimaryWeapon.TotalAmmo;
+				Item.Pellets = Source.CurrentPrimaryWeapon.WeaponMagCapacity;
+				Source.RemoveWeaponItemType(WeaponItemType.Rifle);
+				
+			}else if(Item.Object.WeaponItemType == WeaponItemType.Handgun){
+				Item.Ammo = Source.CurrentSecondaryWeapon.TotalAmmo;
+				Item.Pellets = Source.CurrentSecondaryWeapon.WeaponMagCapacity;
+				Source.RemoveWeaponItemType(WeaponItemType.Handgun);				
+			
+			}else if(Item.Object.WeaponItemType == WeaponItemType.Thrown){
+				Item.Ammo = Source.CurrentThrownItem.CurrentAmmo;
+				Source.RemoveWeaponItemType(WeaponItemType.Thrown);	
+			}
+			Item.MaxAmmo = Item.Ammo;
+
+			//Infinite Ammo For Default Weapons
+			if(Item.Object.WeaponItem == defaultWeaponItem){
+				Item.Ammo = -1;
+				Item.MaxAmmo = -1;
+			}
+		}
+		
+		Item.Object.CustomID = "__GRABBED__";
+		Item.Name = wpn.Name;
+		Item.WeaponItem = wpn.WeaponItem;
+		WeldJoint.AddTargetObject(Item.Object);
+
+		foreach(KeyValuePair<WeaponItem, int> tr in WeaponFireRates){
+			
+			if(Item.Object.WeaponItem == tr.Key){
+				Item.Reload = tr.Value;
+				break;
+			}
+		}
+		
+		if(!fix){
+			Item.Timer = 0;
+			ShowAmmo();
+		}
+		
+		//Set Proper Angle
+		WeldJoint.RemoveTargetObject(Item.Object);
+		Item.Object.SetAngle((realAngle > MathHelper.PIOver2) ? realAngle - MathHelper.PI : realAngle);
+		Item.Object.SetFaceDirection((realAngle > MathHelper.PIOver2) ? -1 : 1);
+		WeldJoint.AddTargetObject(Item.Object);		
+	}
+	
+	public void ShowAmmo(){
+		
+		if(Item.Ammo > 0)
+			Game.PlayEffect("CFTXT", Item.Object.GetWorldPosition() + AimRatio * 15, Item.Ammo.ToString());
+	}
+	
+	public void Step(){
+		
+		if(!Dead){
+			
+			//Remove Broken Drones
+			if(Object == null || Object.DestructionInitiated || Object.RemovalInitiated || Source.IsDead){
+				Remove();
+				return;
+			}
+				
+			/*
+				Movement Controlling
+			*/
+			if(!Source.KeyPressed(VirtualKey.AIM)){
+				
+				if(Source.KeyPressed(VirtualKey.AIM_CLIMB_UP) && Object.GetLinearVelocity().Y < maxVelocity){
+					Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(0, maxAccelerate));
+				}
+
+				if(Source.KeyPressed(VirtualKey.AIM_CLIMB_DOWN) && Object.GetLinearVelocity().Y > -maxVelocity){
+					Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(0, -maxAccelerate));
+				}
+
+				if(Source.KeyPressed(VirtualKey.AIM_RUN_LEFT) && Object.GetLinearVelocity().X > -maxVelocity){
+					Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(-maxAccelerate, 0));
+				}
+
+				if(Source.KeyPressed(VirtualKey.AIM_RUN_RIGHT) && Object.GetLinearVelocity().X < maxVelocity){
+					Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(maxAccelerate, 0));
+				}
+				
+			/*
+				Aiming Controls
+			*/
+			}else{	
+				//Convert to radians
+				realAngle = (AimAngle.X == -1) ? 180 - AimAngle.Y : AimAngle.Y;
+				realAngle *= MathHelper.PI / 180;
+			
+				//Convert Into Trigonomic Ratios
+				AimRatio.X = (float)Math.Cos(realAngle);
+				AimRatio.Y = (float)Math.Sin(realAngle);		
+
+				//Set Cross Hair Position
+				WeldJoint.RemoveTargetObject(CrossHair);
+				CrossHair.SetWorldPosition(Item.Object.GetWorldPosition() + AimRatio * 15);
+				WeldJoint.AddTargetObject(CrossHair);			
+
+				//Set Weapon Angle
+				WeldJoint.RemoveTargetObject(Item.Object);
+				Item.Object.SetAngle((realAngle > MathHelper.PIOver2) ? realAngle - MathHelper.PI : realAngle);
+				Item.Object.SetFaceDirection((realAngle > MathHelper.PIOver2) ? -1 : 1);
+				WeldJoint.AddTargetObject(Item.Object);
+					
+				if(Source.KeyPressed(VirtualKey.AIM_CLIMB_UP)){
+					
+					if(AimAngle.Y < 60)
+						AimAngle.Y += maxTurnSpeed;
+				}
+				
+				if(Source.KeyPressed(VirtualKey.AIM_CLIMB_DOWN)){
+					
+					if(AimAngle.Y > -90)
+						AimAngle.Y -= maxTurnSpeed;
+				}
+				
+				if(!Source.KeyPressed(VirtualKey.AIM_CLIMB_DOWN) && !Source.KeyPressed(VirtualKey.AIM_CLIMB_UP)){
+					
+					if(Source.KeyPressed(VirtualKey.AIM_RUN_RIGHT) && AimAngle.X != 1){
+						AimAngle.X = 1;
+						AimAngle.Y = 0;
+					}
+					
+					if(Source.KeyPressed(VirtualKey.AIM_RUN_LEFT) && AimAngle.X != -1){
+						AimAngle.X = -1;
+						AimAngle.Y = 0;
+					}
+				}
+			}
+
+			/*
+				Weapon Firing,
+			*/			
+			if(Source.KeyPressed(VirtualKey.ATTACK) && Item.Timer >= Item.Reload){
+
+				//Is a configured weapon
+				if(WeaponFireRates.Keys.Contains(Item.WeaponItem)){
+					
+					if(Item.Ammo > 0 || Item.Ammo == -1){
+						
+						if(Item.Ammo != -1)
+							Item.Ammo --;
+						
+						Item.Timer = 0;
+						
+						Game.PlaySound(WeaponFireSound[Item.WeaponItem], Item.Object.GetWorldPosition());
+						
+						//Firing Weapons
+						if(Item.Object.WeaponItemType == WeaponItemType.Rifle || Item.Object.WeaponItemType == WeaponItemType.Handgun){
+							
+							if(Item.WeaponItem != WeaponItem.FLAMETHROWER){
+								
+								//Fire Spread of Bullets Or Singular			
+								float WeaponSpread = 20.0f * (float)MathHelper.PI / 360.0f;
+								for(int i = 1;i <= Item.Pellets;i ++){
+									Vector2 Aim = new Vector2( (float)Math.Cos(realAngle - WeaponSpread + (i / (float)((Item.Pellets - 1 > 0) ? Item.Pellets - 1 : 1)) * WeaponSpread), (float)Math.Sin(realAngle - WeaponSpread + (i / (float)((Item.Pellets - 1 > 0) ? Item.Pellets - 1 : 1)) * WeaponSpread) );
+
+									Game.SpawnProjectile((ProjectileItem)Item.WeaponItem, Item.Object.GetWorldPosition() + Aim * 15, Aim);
+								}
+							}else{
+								Game.SpawnFireNode(Item.Object.GetWorldPosition() + AimRatio * 15, AimRatio * 15, FireNodeType.Flamethrower);
+							}
+							ShowAmmo();
+						}
+						
+						//Throwables
+						if(Item.Object.WeaponItemType == WeaponItemType.Thrown){						
+							IObject thr = Game.CreateObject(((Item.Object.Name == "WpnMines") ? "WpnMine" : Item.Object.Name) + "Thrown", Item.Object.GetWorldPosition() + AimRatio * 15);
+							thr.SetLinearVelocity(AimRatio * 15);
+							ShowAmmo();
+						}					
+					}
+					
+					if(Item.Ammo == 0){
+						ReplaceWeapon(Game.SpawnWeaponItem(defaultWeaponItem, Item.Object.GetWorldPosition() + new Vector2(0, -8), true, 0));
+					}
+				}
+			}
+
+			if(Item.Timer < Item.Reload){
+				Item.Timer ++;
+			}
+
+			/*
+				Weapon Pickups
+			*/		
+			if(Item.Object != null){
+
+				if(Item.Object.IsRemoved){					
+					//Replacement
+					IObjectWeaponItem wpn = Game.SpawnWeaponItem(Item.WeaponItem, Object.GetWorldPosition() + new Vector2(0, -8));			
+					wpn.CustomID = Item.Ammo.ToString();
+					
+					//Remove Old Safely
+					Item.Object = null;
+					
+					//Replace and Fix
+					ReplaceWeapon(wpn, true);
+					
+					IObject[] Objects = WeldJoint.GetTargetObjects();
+					WeldJoint.Remove();
+					WeldJoint = (IObjectWeldJoint)Game.CreateObject("WeldJoint", WeldJoint.GetWorldPosition());
+					WeldJoint.SetTargetObjects(Objects);
+				}
+			}
+	
+			if(Source.KeyPressed(VirtualKey.ACTIVATE)){
+				
+				if(!actPressed){
+					
+					foreach(IObjectWeaponItem wpn in Game.GetObjectsByArea(Object.GetAABB()).Where(x => x is IObjectWeaponItem && x.CustomID != "__GRABBED__")){
+						
+						if(Item.Object != wpn && wpn.WeaponItemType != WeaponItemType.Melee){				
+							ReplaceWeapon(wpn);
+							break;
+						}
+					}
+				}
+				actPressed = true;
+			}else{
+				actPressed = false;
+			}
+			
+			if(Source.KeyPressed(VirtualKey.DROP) && Item.Name != defaultWeapon){
+				ReplaceWeapon(Game.SpawnWeaponItem(defaultWeaponItem, Object.GetWorldPosition() + new Vector2(0, -8), true, 0));
+			}
+
+			if(++IdleTimer % 10 == 0){
+				//Reset Idle Position
+				Vector2 pos = Object.GetWorldPosition();
+				Object.SetWorldPosition(pos + new Vector2(0, 1));
+				Object.SetWorldPosition(pos);	
+				
+				//Sync Health With Player
+				Source.SetHealth(Object.GetHealth());
+				
+				//Sync Energy With Ammo
+				PlayerModifiers mods = Source.GetModifiers();
+				mods.CurrentEnergy = (Item.Ammo / (float)Item.MaxAmmo) * mods.MaxEnergy;
+				Source.SetModifiers(mods);
+				
+				//Kill Out of Bounds Players
+				if(!Game.GetCameraMaxArea().Contains(Object.GetWorldPosition())){
+					Remove();
+				}
+			}
+		}		
+	}
+}

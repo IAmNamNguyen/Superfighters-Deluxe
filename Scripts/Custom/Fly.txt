@@ -1,0 +1,91 @@
+Events.PlayerMeleeActionCallback m_playerMeleeActionEvent = null;
+Events.UserMessageCallback m_userMessageCallback = null;
+IPlayer dick;
+Vector2 plrvec = new Vector2(75,75);
+Vector2 speed_x = new Vector2(25,0);
+Vector2 speed_y = new Vector2(0,25);
+ public void OnStartup() {
+		Game.ShowChatMessage("Thanks for downloading!!!", Color.Green);
+		Game.ShowChatMessage("You can change default options if you write in chat /fly speed_x number or /fly speed_y number or /fly Area number number", Color.Green);
+		Game.ShowChatMessage("So you can back default options if you want /fly Default", Color.Green);
+		Game.ShowChatMessage("You can see settings that you using right now /fly Settings", Color.Green);
+	  m_userMessageCallback = Events.UserMessageCallback.Start(OnUserMessage);
+    m_playerMeleeActionEvent = Events.PlayerMeleeActionCallback.Start(OnPlayerMeleeAction);
+ }
+ public void OnPlayerMeleeAction(IPlayer plr, PlayerMeleeHitArg[] args) {
+    if(plr.IsMeleeAttacking == true & plr.IsWalking == true){
+		Vector2 plrpos = plr.GetWorldPosition();
+		int a = plr.FacingDirection;
+		IObject[] Obj = Game.GetObjectsByArea(new Area(plrpos - plrvec, plrpos + plrvec));
+		foreach(IObject obj in Obj){
+			if(obj.GetBodyType() != BodyType.Static){
+				try{
+					dick = (IPlayer)obj;
+					
+				}
+				catch{
+					obj.SetLinearVelocity(Vector2.Multiply(speed_x, new Vector2((float)a,0)));
+				}
+			}
+		}
+	}
+	else if(plr.IsKicking == true & plr.IsWalking == true){
+			Vector2 plrpos = plr.GetWorldPosition();
+			IObject[] Obj = Game.GetObjectsByArea(new Area(plrpos - plrvec, plrpos + plrvec));
+			foreach(IObject obj in Obj){
+				if(obj.GetBodyType() != BodyType.Static){
+					try{
+					dick = (IPlayer)obj;
+					
+				}
+				catch{
+					obj.SetLinearVelocity(speed_y);
+				}
+				}
+			}
+		}
+ }
+public void OnUserMessage(UserMessageCallbackArgs args) {
+    
+    if (args.IsCommand){
+		if(args.Command == "FLY"){
+			string[] a = args.CommandArguments.Split();
+			switch(a[0]){
+				case "speed_x":
+					try{
+						speed_x.X = (float)Convert.ToInt32(a[1]);
+						Game.ShowChatMessage("Successfully setted to " + (float)Convert.ToInt32(a[1]), Color.Green);
+					} catch{}
+				break;
+
+				case "speed_y":
+					try{
+						speed_y.Y = (float)Convert.ToInt32(a[1]);
+						Game.ShowChatMessage("Successfully setted to " + (float)Convert.ToInt32(a[1]), Color.Green);
+					} catch{}
+				break;
+				case "Area":
+					try{
+						plrvec.X = (float)Convert.ToInt32(a[1]);
+						plrvec.Y = (float)Convert.ToInt32(a[2]);
+						Game.ShowChatMessage("Successfully setted to " + (float)Convert.ToInt32(a[1]) + " " + (float)Convert.ToInt32(a[2]), Color.Green);
+					} catch{}
+				break;
+				case "Settings":
+					Game.ShowChatMessage("Speed_X = " + speed_x.X, Color.Green);
+					Game.ShowChatMessage("Speed_Y = " + speed_y.Y, Color.Green);
+					Game.ShowChatMessage("Area = " + plrvec.X + " " + plrvec.Y, Color.Green);
+					
+				break;
+				case "Default":
+					plrvec = new Vector2(50,50);
+					speed_x = new Vector2(10,0);
+					speed_y = new Vector2(0,10);
+					Game.ShowChatMessage("Setted to deafult", Color.Green);
+				break;
+			}
+		}
+       
+       
+    }
+ }

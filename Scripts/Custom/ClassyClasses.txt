@@ -1,0 +1,744 @@
+//Events
+public Events.UpdateCallback e_Update;
+public Events.PlayerKeyInputCallback e_playerKeyInput;
+
+//Global
+public static Random rnd = new Random();
+
+public double TimeLimit = 60;
+public const double ClassSelection_TimeLimit = 30;
+public static double WeaponCycle_TimeLimit = -1;
+
+public const int Max_Weapons = 5;
+public static int Current_WeaponCycle = 0;
+
+public static Area Original_CameraArea;
+
+public static bool DoneSelection = false;
+
+//Class Selector Area
+public static Area ClassSelector_CameraArea = new Area(1000, -80, 900, 80);
+
+//Lists
+public static List<ClassSelector> Selectors = new List<ClassSelector>();
+public static List<gPlayer> Players = new List<gPlayer>();
+
+public static LoadoutInfo[] Loadouts;
+
+public void AfterStartup()
+{
+	//Game Settings
+	Game.StartupSequenceEnabled = false;
+	Game.AutoSpawnSupplyCratesEnabled = false;
+	
+	//Not Active Set Default TimeLimit
+	if(Game.GetRemainingTimeLimit().TotalSeconds != 0)
+	{
+		TimeLimit = Game.TimeLimit;
+	}
+	else
+	{
+		Game.RunCommand("/TIMELIMIT " + (TimeLimit + ClassSelection_TimeLimit));		
+	}
+	
+	//Start Events
+	e_Update = Events.UpdateCallback.Start(OnUpdate);
+	e_playerKeyInput = Events.PlayerKeyInputCallback.Start(OnPlayerKeyInput);
+
+	//Store Current Camera and Set Camera To Selection Screen
+	Original_CameraArea = Game.GetCameraArea();
+	
+	//Set Camera Position
+	foreach(IObject obj in Game.GetObjectsByName("CameraAreaTrigger"))
+	{
+		obj.Remove();
+	}
+	ShiftCamera(ClassSelector_CameraArea, CameraMode.Static);
+
+	//Requirements For Script To Load
+	CreateProfiles();
+	CreateLoadouts();
+	
+	int w = 0;
+	int h = 0;
+	foreach(IPlayer ply in Game.GetPlayers())
+	{
+		Selectors.Add(new ClassSelector(ply, new Vector2(-80 + w * 40, 992 - 42 * h)));
+		
+		w ++;
+		if(w > 3)
+		{
+			w = 0;
+			h ++;
+		}
+	}
+}
+
+public void OnPlayerKeyInput(IPlayer Player, VirtualKeyInfo[] KeyEvents)
+{
+
+	if(!DoneSelection){
+	
+		foreach(ClassSelector cls in Selectors)
+		{
+		
+			if(cls.Player == Player)
+			{
+				cls.PassInput(KeyEvents);
+			}
+		}
+	}
+}
+
+public void OnUpdate(float t)
+{
+
+	if(!Game.IsGameOver)
+	{
+		double TimeRemaining = Game.GetRemainingTimeLimit().TotalSeconds;
+		
+		if(!DoneSelection)
+		{
+			bool SelectorsDone = true;
+			foreach(ClassSelector cls in Selectors)
+			{
+				
+				if(!cls.Player.IsDead && !cls.Player.IsRemoved && !cls.Selected)
+				{
+					SelectorsDone = false;
+				}
+			}
+			
+			//End Class Selection
+			if(TimeRemaining <= TimeLimit - ClassSelection_TimeLimit || SelectorsDone)
+			{
+
+				foreach(ClassSelector cls in Selectors)
+				{
+					cls.Start();
+				}
+				ShiftCamera(Original_CameraArea, CameraMode.Dynamic | CameraMode.Static);
+				
+				//Set TimeLimit After Class Selection For Proper Numbers
+				TimeLimit = TimeRemaining;
+				//Give First Weapon Initially
+				WeaponCycle_TimeLimit = TimeRemaining;
+				
+				DoneSelection = true;
+			}
+			else
+			{
+
+				foreach(ClassSelector cls in Selectors)
+				{
+					cls.Draw();
+				}
+			}
+			Game.ShowPopupMessage("Use [[KEY=AIM_RUN_LEFT]] or [[KEY=AIM_RUN_RIGHT]] To Choose A Class" + "\nUse [[KEY=ACTIVATE]] To Lock-In" + "\n\n TimeLeft: " + Math.Round(TimeRemaining - (TimeLimit - ClassSelection_TimeLimit)) + "s");
+		}
+		else
+		{
+								
+			if(TimeRemaining <= WeaponCycle_TimeLimit && WeaponCycle_TimeLimit != -1 && Current_WeaponCycle < Max_Weapons)
+			{
+				//Buffer TimeLimit By 1/5 SO Can Use Last Weapon
+				WeaponCycle_TimeLimit = TimeLimit - ((TimeLimit - TimeLimit / Max_Weapons) / Max_Weapons) * ++Current_WeaponCycle;
+
+				foreach(gPlayer ply in Players)
+				{
+					ply.NextWeapon();
+				}
+			}
+			
+			if(Current_WeaponCycle < Max_Weapons)
+			{
+				Game.ShowPopupMessage(Math.Round(TimeRemaining - WeaponCycle_TimeLimit) + "s till next weapon");
+			}
+			else
+			{
+				Game.ShowPopupMessage("");
+			}
+		}
+	}
+	else
+	{
+		Game.ShowPopupMessage("");
+	}
+}
+
+public void ShiftCamera(Area Cam, CameraMode Mode)
+{
+	Game.SetCameraArea(Cam);
+	Game.SetAllowedCameraModes(Mode);
+	
+	if((Mode & CameraMode.Dynamic) != 0)
+		Game.SetCurrentCameraMode(CameraMode.Dynamic);
+}
+
+public static string Shorten(string input)
+{
+
+	if(input.Length > 7)
+	{
+		input = input.Substring(0,5) + "..";
+	}
+
+	return input;
+}
+
+public class LoadoutInfo
+{
+	public string Name;
+	public Color col;
+	public IProfile prof;
+	public WeaponItem[] Weapons;
+
+	public LoadoutInfo(string _n, Color _c, IProfile _prof, WeaponItem _melee, WeaponItem _handgun, WeaponItem _rifle, WeaponItem _throw, WeaponItem _power)
+	{
+		Name = _n;
+		col = _c;
+		prof = _prof;
+		Weapons = new WeaponItem[]{_melee, _handgun, _rifle, _throw, _power};
+	}
+};
+
+public class HudInfo
+{
+	IPlayer Portrait;
+	IObjectText[] TextObjects;
+	int Count;
+	
+	public HudInfo(Vector2 Position, int Elements)
+	{
+		TextObjects = new IObjectText[Elements * 5];
+		Count = Elements;
+		
+		for(int i = 0;i < Elements;i ++)
+		{
+			
+			for(int j = 0;j <= 4;j ++)
+			{
+				float Height = -8;
+				float Scale = 1f;
+				
+				if(i != 0)
+				{
+					Height = -6;
+					Scale = 0.5f;
+				}
+				
+				Vector2 Shift = new Vector2(0, 0);
+				if(j != 4)
+				{
+					Shift.X = (float)Math.Cos(j * MathHelper.PIOver2) * Scale;
+					Shift.Y = (float)Math.Sin(j * MathHelper.PIOver2) * Scale;
+				}
+				
+				TextObjects[i + Count * j] = (IObjectText)Game.CreateObject("Text", Position + Shift + new Vector2(0, i * Height));
+				
+				if(i != 0)
+					TextObjects[i + Count * j].SetTextScale(Scale);
+			}
+		}
+		
+		Portrait = Game.CreatePlayer(Position + new Vector2(28, -20));
+		Portrait.SetFaceDirection(-1);
+		Portrait.SetNametagVisible(false);
+		Portrait.SetStatusBarsVisible(false);
+		Game.CreateObject("InvisibleBlock", Position + new Vector2(28, -36));
+	}
+	
+	public void SetText(int Index, string Text, byte r = 255, byte g = 255, byte b = 255)
+	{
+
+		if(Index < TextObjects.Length && Index >= 0)
+		{
+			
+			for(int i = 0;i <= 4;i ++)
+			{
+				TextObjects[Index + Count * i].SetText(Text);
+				
+				if(i != 4)
+				{
+					TextObjects[Index + Count * i].SetTextColor(new Color(0, 0, 0));
+				}
+				else
+				{
+					TextObjects[Index + Count * i].SetTextColor(new Color(r, g, b));
+				}
+			}			
+		}
+		
+	}
+	
+	public void SetProfile(IProfile Profile)
+	{
+		Portrait.SetProfile(Profile);
+	}
+	
+	public void RemovePlayer()
+	{
+		Portrait.Remove();
+	}
+};
+
+public class ClassSelector{
+	public IPlayer Player;
+	public bool Selected = false;
+	bool Started = false;
+
+	HudInfo Hud;
+	int Selection = 0;
+	
+	public ClassSelector(IPlayer _ply, Vector2 Position)
+	{
+		Player = _ply;
+		Hud = new HudInfo(Position, Max_Weapons + 2);
+		
+		Player.SetNametagVisible(false);
+		Player.SetStatusBarsVisible(false);
+		Player.SetInputMode(PlayerInputMode.ReadOnly);
+		
+		if(Player.IsBot)
+		{
+			Selection = rnd.Next(0, Loadouts.Length);
+			Selected = true;
+		}
+	}
+	
+	public void PassInput(VirtualKeyInfo[] KeyEvents)
+	{
+
+		if(!Selected)
+		{
+	
+			foreach(VirtualKeyInfo vk in KeyEvents)
+			{
+		
+				if(vk.Event == VirtualKeyEvent.Pressed)
+				{
+		
+					switch(vk.Key)
+					{
+					
+						case VirtualKey.AIM_RUN_LEFT:
+							Selection --;
+							
+							if(Selection < 0)
+								Selection = Loadouts.Length - 1;
+							
+							Game.PlaySound("MenuCancel", Vector2.Zero);
+						break;					
+						
+						case VirtualKey.AIM_RUN_RIGHT:
+							Selection ++;
+
+							if(Selection >= Loadouts.Length)
+								Selection = 0;				
+
+							Game.PlaySound("MenuCancel", Vector2.Zero);
+						break;
+						
+						case VirtualKey.ACTIVATE:
+							Selected = true;
+							Game.PlaySound("MenuOK", Vector2.Zero);
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	public void Draw()
+	{	
+		string Player_Name = Shorten(Player.Name);
+
+		if(!Selected)
+		{
+			Hud.SetText(0, Player_Name);
+		}
+		else
+		{
+			Hud.SetText(0, "[" + Player_Name + "]", 255, 217, 28);
+		}
+		Hud.SetText(1, Loadouts[Selection].Name + ":", Loadouts[Selection].col.R, Loadouts[Selection].col.G, Loadouts[Selection].col.B);
+
+		for(int i = 0;i < Max_Weapons;i ++)
+		{
+			
+			if(Loadouts[Selection].Weapons.Length > i)
+			{
+				string WeaponName = "";
+				
+				if(Loadouts[Selection].Weapons[i] != WeaponItem.NONE)
+				{
+					WeaponName = "" + Loadouts[Selection].Weapons[i];
+					
+					if(WeaponName != "")
+					{
+						WeaponName = WeaponName.ToLower();
+						WeaponName = WeaponName.Replace('_', ' ');
+						WeaponName = Char.ToUpper(WeaponName[0]) + WeaponName.Substring(1, WeaponName.Length - 1);
+					}
+				}
+				else
+				{
+					WeaponName = "-";
+				}
+				Hud.SetText(i + 2, (i + 1) + ". " + WeaponName);
+			}
+			else
+			{
+				Hud.SetText(i + 2, "");
+			}
+		}
+		
+		Hud.SetProfile(Loadouts[Selection].prof);
+	}
+	
+	public void Start()
+	{
+	
+		if(!Started)
+		{
+			Started = true;
+			
+			if(Selected)
+			{
+				Players.Add(new gPlayer(Player, Loadouts[Selection]));
+			}
+			else
+			{
+				Players.Add(new gPlayer(Player, Loadouts[rnd.Next(0, Loadouts.Length)]));
+			}
+			Hud.RemovePlayer();
+		}
+	}
+};
+
+public class gPlayer
+{
+	IPlayer Player;
+	
+	LoadoutInfo Loadout;
+	int WeaponCycle = 0;
+	
+	public gPlayer(IPlayer _ply, LoadoutInfo _l)
+	{
+		Player = _ply;
+		Loadout = _l;
+		Player.SetProfile(Loadout.prof);
+
+		Player.SetNametagVisible(true);
+		Player.SetStatusBarsVisible(true);		
+		Player.SetInputMode(PlayerInputMode.Enabled);
+		
+		PlayerModifiers mods = Player.GetModifiers();
+		mods.ItemDropMode = 2;
+		Player.SetModifiers(mods);
+	}
+	
+	public void NextWeapon()
+	{
+		
+		if(!Player.IsDead && WeaponCycle < Loadout.Weapons.Length)
+		{
+			Player.GiveWeaponItem(Loadout.Weapons[WeaponCycle ++]);
+		}
+	}
+};
+
+//Class Profiles
+public static IProfile p_Classic = new IProfile();
+public static IProfile p_Pyro = new IProfile();
+public static IProfile p_Demo = new IProfile();
+public static IProfile p_Cowboy = new IProfile();
+public static IProfile p_Hitman = new IProfile();
+public static IProfile p_Ninja = new IProfile();
+public static IProfile p_MeatGrinder = new IProfile();
+public static IProfile p_Viking = new IProfile();
+public static IProfile p_Noob = new IProfile();
+public static IProfile p_Metrocop = new IProfile();
+public static IProfile p_Soldier = new IProfile();
+public static IProfile p_Thug = new IProfile();
+public static IProfile p_Bandido = new IProfile();
+public static IProfile p_ZombSoldier = new IProfile();
+
+public void CreateProfiles()
+{
+	//CLASSIC
+	p_Classic.Skin = new IProfileClothingItem("Normal","Skin3");
+	p_Classic.ChestUnder = new IProfileClothingItem("SleevelessShirt","ClothingLightGray");
+	p_Classic.Legs = new IProfileClothingItem("Pants","ClothingDarkGray");
+	p_Classic.Feet = new IProfileClothingItem("BootsBlack","ClothingDarkGray");
+	
+	//PYRO
+	p_Pyro.Waist = new IProfileClothingItem("AmmoBelt","ClothingDarkGray");
+	p_Pyro.ChestOver = new IProfileClothingItem("Suspenders","ClothingDarkGray","ClothingDarkGray");
+	p_Pyro.ChestUnder = new IProfileClothingItem("Shirt","ClothingRed");
+	p_Pyro.Hands = new IProfileClothingItem("Gloves","ClothingGray");
+	p_Pyro.Waist = new IProfileClothingItem("SmallBelt","ClothingDarkGray","ClothingLightGray");
+	p_Pyro.Legs = new IProfileClothingItem("Pants","ClothingRed");
+	p_Pyro.Feet = new IProfileClothingItem("Boots","ClothingGray");
+	p_Pyro.Accessory = new IProfileClothingItem("GasMask","ClothingGray","ClothingLightGray");
+	
+	//DEMON
+	p_Demo.Skin = new IProfileClothingItem("Normal","Skin5");
+	p_Demo.ChestOver = new IProfileClothingItem("GrenadeBelt", "");
+	p_Demo.ChestUnder = new IProfileClothingItem("TShirt", "ClothingGray");
+	p_Demo.Hands = new IProfileClothingItem("Gloves", "ClothingGray");
+	p_Demo.Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkCyan");
+	p_Demo.Feet = new IProfileClothingItem("BootsBlack", "ClothingGray");
+	p_Demo.Accessory = new IProfileClothingItem("AgentSunglasses", "", "ClothingLightGray");
+	
+	//COWBOY
+	p_Cowboy.Skin = new IProfileClothingItem("Normal","Skin3");
+	p_Cowboy.Head = new IProfileClothingItem("CowboyHat","ClothingDarkBrown","ClothingLightBrown");
+	p_Cowboy.ChestUnder = new IProfileClothingItem("TrainingShirt","ClothingLightBrown");
+	p_Cowboy.Waist = new IProfileClothingItem("SatchelBelt","ClothingDarkOrange");
+	p_Cowboy.Legs = new IProfileClothingItem("Pants","ClothingBrown");
+	p_Cowboy.Feet = new IProfileClothingItem("ShoesBlack","ClothingGray");
+	p_Cowboy.Accessory = new IProfileClothingItem("Scarf","ClothingLightOrange");
+	
+	//HITMAN
+	p_Hitman.Skin = new IProfileClothingItem("Normal","Skin4");
+	p_Hitman.ChestOver = new IProfileClothingItem("SuitJacketBlack","ClothingDarkGray");
+	p_Hitman.ChestUnder = new IProfileClothingItem("ShirtWithTie","ClothingWhite", "ClothingRed");
+	p_Hitman.Legs = new IProfileClothingItem("Pants","ClothingGray");
+	p_Hitman.Feet = new IProfileClothingItem("BootsBlack","ClothingGray");
+	
+	//NINJA
+	p_Ninja.Skin = new IProfileClothingItem("Normal","Skin4");
+	p_Ninja.Head = new IProfileClothingItem("Headband","ClothingDarkGray");
+	p_Ninja.ChestUnder = new IProfileClothingItem("TrainingShirt","ClothingDarkGray");
+	p_Ninja.Hands = new IProfileClothingItem("FingerlessGloves","ClothingGray");
+	p_Ninja.Legs = new IProfileClothingItem("Pants","ClothingDarkGray");
+	p_Ninja.Accessory = new IProfileClothingItem("Balaclava","ClothingDarkGray");
+	
+	//MEATGRINDER
+	p_MeatGrinder.Skin = new IProfileClothingItem("Tattoos","Skin3","ClothingPink");
+	p_MeatGrinder.Head = new IProfileClothingItem("ChefHat","ClothingLightGray");
+	p_MeatGrinder.ChestOver = new IProfileClothingItem("Apron","ClothingLightPink");
+	p_MeatGrinder.Hands = new IProfileClothingItem("SafetyGlovesBlack","ClothingDarkRed");
+	p_MeatGrinder.Legs = new IProfileClothingItem("ShortsBlack","ClothingGray");
+	p_MeatGrinder.Feet = new IProfileClothingItem("BootsBlack","ClothingGray");
+	p_MeatGrinder.Accessory = new IProfileClothingItem("GoalieMask","");
+
+	//VIKING
+	p_Viking.Skin = new IProfileClothingItem("Tattoos","Skin2","ClothingDarkRed");
+	p_Viking.Head = new IProfileClothingItem("Headband","ClothingDarkBrown");
+	p_Viking.ChestUnder = new IProfileClothingItem("TornShirt","ClothingLightBrown");
+	p_Viking.Hands = new IProfileClothingItem("SafetyGlovesBlack","ClothingLightGray");
+	p_Viking.Legs = new IProfileClothingItem("TornPants","ClothingDarkPink");
+	p_Viking.Feet = new IProfileClothingItem("Boots","ClothingDarkBrown");
+	
+	//NOOB
+	p_Noob.Skin = new IProfileClothingItem("Normal","Skin1");
+	p_Noob.ChestUnder = new IProfileClothingItem("SleevelessShirt","ClothingGreen");
+	p_Noob.Legs = new IProfileClothingItem("PantsBlack","ClothingBlue");
+	p_Noob.Feet = new IProfileClothingItem("ShoesBlack","ClothingBrown");
+	
+	//METROCOP
+	p_Metrocop.Head = new IProfileClothingItem("MetroLawGasMask", "ClothingGray", "ClothingGreen");
+	p_Metrocop.ChestOver = new IProfileClothingItem("MetroLawJacket", "ClothingGray", "ClothingGray");
+	p_Metrocop.ChestUnder = new IProfileClothingItem("Shirt", "ClothingDarkGray");
+	p_Metrocop.Hands = new IProfileClothingItem("SafetyGlovesBlack", "ClothingGray");
+	p_Metrocop.Legs = new IProfileClothingItem("PantsBlack", "ClothingGray");
+	p_Metrocop.Feet = new IProfileClothingItem("BootsBlack", "ClothingGray");
+	
+	//SOLDIER
+	p_Soldier.Skin = new IProfileClothingItem("Normal", "Skin3");
+	p_Soldier.Head = new IProfileClothingItem("Helmet2", "ClothingDarkYellow");
+	p_Soldier.ChestUnder = new IProfileClothingItem("MilitaryShirt", "ClothingDarkYellow", "ClothingDarkYellow");
+	p_Soldier.Legs = new IProfileClothingItem("Pants", "ClothingDarkYellow");
+	p_Soldier.Feet = new IProfileClothingItem("BootsBlack", "ClothingBrown");
+	
+	//THUG
+	p_Thug.Gender = Gender.Female;
+	p_Thug.Skin = new IProfileClothingItem("Warpaint_fem", "Skin2", "ClothingYellow");
+	p_Thug.Head = new IProfileClothingItem("Mohawk", "ClothingOrange");
+	p_Thug.ChestOver = new IProfileClothingItem("StuddedJacket_fem", "ClothingDarkCyan", "ClothingDarkCyan");
+	p_Thug.ChestUnder = new IProfileClothingItem("SleevelessShirt_fem", "ClothingYellow");
+	p_Thug.Hands = new IProfileClothingItem("FingerlessGloves", "ClothingDarkCyan");
+	p_Thug.Waist = new IProfileClothingItem("Belt", "ClothingkGray", "ClothingLightGray");
+	p_Thug.Legs = new IProfileClothingItem("PantsBlack_fem", "ClothingDarkCyan");
+	p_Thug.Feet = new IProfileClothingItem("BootsBlack", "ClothingGray");
+	
+	//BANDIDO
+	p_Bandido.Skin = new IProfileClothingItem("Normal", "Skin2");	
+	p_Bandido.Head = new IProfileClothingItem("Sombrero", "ClothingOrange");
+	p_Bandido.ChestOver = new IProfileClothingItem("Poncho2", "ClothingDarkYellow", "ClothingYellow");
+	p_Bandido.ChestUnder = new IProfileClothingItem("Shirt", "ClothingDarkYellow", "ClothingDarkOrange");
+	p_Bandido.Waist = new IProfileClothingItem("SatchelBelt", "ClothingOrange");
+	p_Bandido.Legs = new IProfileClothingItem("Pants", "ClothingDarkRed");
+	p_Bandido.Feet = new IProfileClothingItem("RidingBoots", "ClothingBrown");
+	p_Bandido.Accessory = new IProfileClothingItem("Mask", "ClothingDarkRed");
+	
+	//ZOMBIE GERMAN SOLDIER
+	p_ZombSoldier.Skin = new IProfileClothingItem("Zombie", "");
+	p_ZombSoldier.Head = new IProfileClothingItem("SpikedHelmet", "ClothingCyan");
+	p_ZombSoldier.ChestUnder = new IProfileClothingItem("LeatherJacketBlack", "ClothingCyan", "ClothingLightGray");
+	p_ZombSoldier.Legs = new IProfileClothingItem("TornPants", "ClothingCyan");
+	p_ZombSoldier.Feet = new IProfileClothingItem("BootsBlack", "ClothingCyan");
+}
+
+//Create Loadouts
+public void CreateLoadouts()
+{
+	Loadouts = new LoadoutInfo[]{
+
+		new LoadoutInfo(
+			"Classic",
+			new Color(115, 115, 115),
+			p_Classic,
+			WeaponItem.UZI,
+			WeaponItem.LEAD_PIPE,
+			WeaponItem.GRENADES,
+			WeaponItem.SHOTGUN,
+			WeaponItem.AXE
+		),
+
+		new LoadoutInfo(
+			"Pyro",
+			new Color(255, 102, 102),
+			p_Pyro,
+			WeaponItem.FLAREGUN,
+			WeaponItem.AXE,
+			WeaponItem.FLAMETHROWER,
+			WeaponItem.MOLOTOVS,
+			WeaponItem.FIREAMMO
+		),	
+		
+		new LoadoutInfo(
+			"Demolition Expert",
+			new Color(224, 162, 85),
+			p_Demo,
+			WeaponItem.GRENADES,
+			WeaponItem.BAT,
+			WeaponItem.C4,
+			WeaponItem.MINES,
+			WeaponItem.GRENADE_LAUNCHER
+		),	
+		
+		new LoadoutInfo(
+			"Cowboy",
+			new Color(99, 60, 12),
+			p_Cowboy,
+			WeaponItem.WHIP,
+			WeaponItem.REVOLVER,
+			WeaponItem.SAWED_OFF,
+			WeaponItem.MAGNUM,
+			WeaponItem.CARBINE
+		),	
+		
+		new LoadoutInfo(
+			"Hitman",
+			new Color(255, 191, 207),
+			p_Hitman,
+			WeaponItem.SUITCASE,
+			WeaponItem.CHAIN,
+			WeaponItem.SILENCEDPISTOL,
+			WeaponItem.C4,
+			WeaponItem.SNIPER
+		),	
+
+		new LoadoutInfo(
+			"Ninja",
+			new Color(64, 57, 57),
+			p_Ninja,
+			WeaponItem.KNIFE,
+			WeaponItem.KATANA,
+			WeaponItem.SHURIKEN,
+			WeaponItem.BOW,
+			WeaponItem.SLOWMO_5
+		),
+
+		new LoadoutInfo(
+			"Meat Grinder",
+			new Color(214, 32, 78),
+			p_MeatGrinder,
+			WeaponItem.NONE,
+			WeaponItem.CHAINSAW,
+			WeaponItem.NONE,
+			WeaponItem.NONE,
+			WeaponItem.CHAINSAW
+		),	
+		
+		new LoadoutInfo(
+			"Viking",
+			new Color(227, 39, 218),
+			p_Viking,
+			WeaponItem.MACHETE,
+			WeaponItem.KNIFE,
+			WeaponItem.AXE,
+			WeaponItem.KATANA,
+			WeaponItem.SHURIKEN
+		),
+
+		new LoadoutInfo(
+			"Noob",
+			new Color(0, 84, 6),
+			p_Noob,
+			WeaponItem.PILLOW,
+			WeaponItem.PILLOW,
+			WeaponItem.PILLOW,
+			WeaponItem.BAZOOKA,
+			WeaponItem.GRENADE_LAUNCHER
+		),	
+
+		new LoadoutInfo(
+			"Metrocop",
+			new Color(37, 61, 97),
+			p_Metrocop,
+			WeaponItem.BATON,
+			WeaponItem.SILENCEDPISTOL,
+			WeaponItem.SHOCK_BATON,
+			WeaponItem.MACHINE_PISTOL,
+			WeaponItem.ASSAULT
+		),	
+		
+		new LoadoutInfo(
+			"Soldier",
+			new Color(59, 125, 49),
+			p_Soldier,
+			WeaponItem.KNIFE,
+			WeaponItem.PISTOL,
+			WeaponItem.MINES,
+			WeaponItem.MACHINE_PISTOL,
+			WeaponItem.TOMMYGUN
+		),
+
+		new LoadoutInfo(
+			"Thug",
+			new Color(90, 219, 217),
+			p_Thug,
+			WeaponItem.CUESTICK,
+			WeaponItem.STRENGTHBOOST,
+			WeaponItem.FLAGPOLE,
+			WeaponItem.STRENGTHBOOST,
+			WeaponItem.SUITCASE
+		),		
+
+		new LoadoutInfo(
+			"Bandido",
+			new Color(255, 161, 38),
+			p_Bandido,
+			WeaponItem.MACHETE,
+			WeaponItem.SAWED_OFF,
+			WeaponItem.MOLOTOVS,
+			WeaponItem.SAWED_OFF,
+			WeaponItem.BOUNCINGAMMO
+		),		
+		
+		new LoadoutInfo(
+			"Zombie Soldier",
+			new Color(102, 214, 62),
+			p_ZombSoldier,
+			WeaponItem.KNIFE,
+			WeaponItem.MP50,
+			WeaponItem.PILLS,
+			WeaponItem.PILLS,
+			WeaponItem.MP50
+		),
+	};
+}

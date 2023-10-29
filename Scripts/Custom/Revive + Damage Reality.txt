@@ -1,0 +1,73 @@
+// mapmodes: versus, custom, campaign, survival
+private const bool HARDCORE_ACTIVATED = true;			    		// set to "true" to enable hardcore mode
+private const float HC_GUNS_MULTIPLIER = (float) 2.5;		    	// damage multiplier for guns
+private const float HC_MELEE_MULTIPLIER = (float) 1.0;		   		// damage multiplier for melee
+private const float HC_FALL_MULTIPLIER = (float) 1.0;		    	// damage multiplier for fall
+private const float HC_FIRE_MULTIPLIER = (float) 1.0;		    	// damage multiplier for fire
+private const float HC_EXPL_MULTIPLIER = (float) 1.0;		    	// damage multiplier for explosions
+private const bool HC_BLOCK_DAMAGE = true;			    			// set to "true" to make blocked attacks damage players
+private const int HC_BLOCK_DAMAGE_AMOUNT = 3;		    			// damage in HP given by blocked attack
+private const bool HC_BLEEDING = true;				    			// set te "true" to enable bleeding on getting some damage
+private const bool HC_BLEEDING_ON_START = false;		    		// set te "true" to make people bleed in the very beginning
+private const int HC_BLEEDING_CHANCE = 1;			    			// bleeding will start with chance "1/x" where x is this variable
+private const int HC_BLEEDING_TRIGGER_HP = 80;	    				// damage in HP after that bleeding will start find a chance
+private const bool HC_CANT_PUT_FIRE_OFF = false;		    		// set to "true" to disallow players to roll to stop burning
+//private const bool HC_WEAPONS_BREAK = true;			    		// set to "true" to allow weapons to break [WIP]
+
+public void TickFast(TriggerArgs args){
+	if (HARDCORE_ACTIVATED && !INSTAGIB_ON) Tick_Hardcore_Main();
+}
+private void Tick_Hardcore_Main(){
+	for(int i = players.Count - 1; i >=0; i--){
+		PlayerData data = players[i];
+		if (data.Body.IsRemoved) {
+			if (players[i].Label != null) players[i].Label.Remove();
+			players.RemoveAt(i);
+			CheckGameover();
+		} else {
+			IPlayerStatistics stats = data.Body.Statistics;
+			float damage =
+				stats.TotalFallDamageTaken * HC_FALL_MULTIPLIER +
+				stats.TotalMeleeDamageTaken * HC_MELEE_MULTIPLIER +
+				stats.TotalProjectileDamageTaken * HC_GUNS_MULTIPLIER +
+				stats.TotalExplosionDamageTaken * HC_EXPL_MULTIPLIER +
+				stats.TotalFireDamageTaken * HC_FIRE_MULTIPLIER +
+				data.BleedDamage;
+			if (HC_BLOCK_DAMAGE) damage +=  stats.TotalBlockedAttacks * (float)HC_BLOCK_DAMAGE_AMOUNT;
+			float damage_causingBleed = stats.TotalMeleeDamageTaken * HC_MELEE_MULTIPLIER +
+				stats.TotalProjectileDamageTaken * HC_GUNS_MULTIPLIER +
+				stats.TotalExplosionDamageTaken * HC_EXPL_MULTIPLIER;
+
+			if (data.StartHealth - damage > 0f){
+				float healthNow = data.Body.GetHealth();
+				if (healthNow > data.LastHealth /*&& data.HealthNeeded < healthNow - data.LastHealth*/){
+					if (data.IsBleeding){
+						data.IsBleeding = false;
+						data.HealthNeeded += healthNow - data.LastHealth - 25f;
+					} else data.HealthNeeded += healthNow - data.LastHealth + 10f;
+				} else if (data.HealthNeeded > 0f){
+					data.HealthAdded += 0.5f;
+					data.HealthNeeded -= 0.5f;
+				} else data.HealthNeeded = 0f;
+
+				if (data.WasSetOnFire){
+					data.Body.SetMaxFire();
+				}
+
+				if (data.IsBleeding){
+					data.BleedDamage += 0.1f;
+					if (rand.Next(6) == 0)
+						Game.PlayEffect("TR_B", data.Body.GetWorldPosition() + new Vector2(8,0) + new Vector2(rand.Next(-2,2),rand.Next(-2,2)));
+				}
+
+				data.Body.SetHealth(data.StartHealth - damage + data.HealthAdded);
+				if (HC_BLEEDING && damage_causingBleed - data.LastDamage > (float)HC_BLEEDING_TRIGGER_HP && rand.Next(HC_BLEEDING_CHANCE) == 0){ 
+					data.IsBleeding = true;
+					Game.PlayEffect("CFTXT", data.Body.GetWorldPosition() + new Vector2(0f, 30f), "BLEEDING!");
+				} if (HC_CANT_PUT_FIRE_OFF && stats.TotalFireDamageTaken != 0) data.WasSetOnFire = true;
+				data.LastHealth = data.Body.GetHealth();
+				data.LastDamage = damage_causingBleed;
+			} else data.Body.Kill();
+		}
+	}
+}}

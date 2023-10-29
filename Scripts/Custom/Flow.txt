@@ -1,0 +1,58 @@
+//============FLOW_SCRIPT============//
+//============BY_ARMADYL5============//
+//==============ENJOY===============//
+
+
+
+// Feel Free To Use Any Script Or Method You Like //
+
+
+ 
+//==============STARTUP_PREPARE===============//
+
+public void OnStartup(){
+IObjectTimerTrigger Timer0 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer0.SetIntervalTime(100);
+Timer0.SetRepeatCount(0);
+Timer0.SetScriptMethod("Flow");
+Timer0.Trigger();
+}
+
+
+
+
+public void Flow(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+Vector2 Here = ply.GetWorldPosition();
+Vector2 HereR = ply.GetWorldPosition() + new Vector2(30,0);
+Vector2 HereL = ply.GetWorldPosition() + new Vector2(-30,0);
+IObject [] Obj = Game.GetObjectsByArea(Game.GetCameraArea());
+foreach(IObject Object in Obj){
+Vector2 ObjX = Object.GetWorldPosition();
+if(Object != ply){
+if(ply.IsBlocking && ply.IsWalking){
+if((ObjX-Here).Length() <= 35 && Object.GetBodyType() == BodyType.Dynamic){
+Game.PlaySound("ItemSpawn",ObjX,1f);
+Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(0,5));
+ply.SetLinearVelocity(new Vector2(0,0));
+Object.SetAngularVelocity(Object.GetAngularVelocity() - 5);
+}
+}
+if(ply.IsMeleeAttacking && ply.IsWalking && ply.FacingDirection == 1){
+if((ObjX-HereR).Length() <= 25 && Object.GetBodyType() == BodyType.Dynamic){
+Game.PlaySound("ItemSpawn",ObjX,1f);
+Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(5,3));
+Object.SetAngularVelocity(Object.GetAngularVelocity() - 10);
+}
+}
+if(ply.IsMeleeAttacking && ply.IsWalking && ply.FacingDirection == -1){
+if((ObjX-HereL).Length() <= 25 && Object.GetBodyType() == BodyType.Dynamic){
+Game.PlaySound("ItemSpawn",ObjX,1f);
+Object.SetLinearVelocity(Object.GetLinearVelocity() + new Vector2(-5,3));
+Object.SetAngularVelocity(Object.GetAngularVelocity() + 10);
+}
+}
+}
+}
+}
+}

@@ -1,0 +1,147 @@
+//Weapon Auto Generator made by Nam
+//Please, if you copy any method frome here, be sure to give some credit like me :v//
+//Credit: some script in here was copied from 'Throw' script in the internet but i don't remember what the author name is//
+
+bool GiveWeaponDefault = true;       // gives each player a certain weapons (  cuestick as default).
+
+// You can change this to any weapon you wish
+public WeaponItem DefaultWeapon = WeaponItem.CARBINE;
+//  You can find a list of weapons bellow 
+
+WeaponItem[] ThrownWeaponsClass = new WeaponItem[]{
+WeaponItem.GRENADES,
+WeaponItem.MOLOTOVS,
+WeaponItem.MINES,
+};
+WeaponItem[] RifleWeaponsClass = new WeaponItem[]{
+WeaponItem.SHOTGUN,
+WeaponItem.TOMMYGUN,
+WeaponItem.M60,
+WeaponItem.SNIPER,
+WeaponItem.SAWED_OFF,
+WeaponItem.BAZOOKA,
+WeaponItem.ASSAULT,
+WeaponItem.CARBINE,
+WeaponItem.FLAMETHROWER,
+WeaponItem.GRENADE_LAUNCHER,
+WeaponItem.SMG,
+WeaponItem.SUB_MACHINEGUN,
+};
+WeaponItem[] HandWeaponsClass = new WeaponItem[]{
+WeaponItem.PISTOL,
+WeaponItem.MAGNUM,
+WeaponItem.UZI,
+WeaponItem.FLAREGUN,
+WeaponItem.REVOLVER,
+WeaponItem.SILENCEDPISTOL,
+WeaponItem.SILENCEDUZI,
+};
+WeaponItem[] MeleeWeaponsClass = new WeaponItem[]{
+WeaponItem.KATANA,
+WeaponItem.PIPE,
+WeaponItem.MACHETE,
+WeaponItem.BAT,
+WeaponItem.AXE,
+WeaponItem.HAMMER,
+WeaponItem.BATON,
+WeaponItem.KNIFE,
+WeaponItem.CHAIN,
+WeaponItem.CHAINSAW,
+};
+WeaponItem[] MakeShiftWeaponsClass = new WeaponItem[]{
+WeaponItem.CHAIR,
+WeaponItem.CHAIR_LEG,
+WeaponItem.BOTTLE,
+WeaponItem.BROKEN_BOTTLE,
+WeaponItem.CUESTICK,
+WeaponItem.CUESTICK_SHAFT,
+WeaponItem.SUITCASE,
+WeaponItem.PILLOW,
+WeaponItem.FLAGPOLE,
+WeaponItem.TEAPOT,
+};
+WeaponItem[] PowerupsWeaponsClass = new WeaponItem[]{
+WeaponItem.STRENGTHBOOST,
+WeaponItem.SPEEDBOOST,
+};
+public void OnStartup()
+{
+if (GiveWeaponDefault)
+	{
+		IObjectTimerTrigger Timer3 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+		Timer3.SetIntervalTime(250);
+		Timer3.SetRepeatCount(0);
+		
+				if (ThrownWeaponsClass.Contains(DefaultWeapon))
+		{
+			Timer3.SetScriptMethod("mid1");
+		}
+		if (RifleWeaponsClass.Contains(DefaultWeapon))
+		{
+			Timer3.SetScriptMethod("mid2");
+		}
+		if (HandWeaponsClass.Contains(DefaultWeapon))
+		{
+			Timer3.SetScriptMethod("mid3");
+		}
+		if (MeleeWeaponsClass.Contains(DefaultWeapon))
+		{
+			Timer3.SetScriptMethod("mid4");
+		}
+		if (MakeShiftWeaponsClass.Contains(DefaultWeapon))
+		{
+			Timer3.SetScriptMethod("mid5");
+		}
+		Timer3.Trigger();
+	}
+}
+public void mid1(TriggerArgs args)
+{
+	foreach (IPlayer ply in Game.GetPlayers())
+	{
+		if (ply.CurrentThrownItem.WeaponItem == WeaponItem.NONE && !ply.IsRolling && !ply.IsDead && !ply.IsStaggering && !ply.IsLayingOnGround)
+		{
+			ply.GiveWeaponItem(DefaultWeapon);
+		}
+	}
+}
+public void mid2(TriggerArgs args)
+{
+	foreach (IPlayer ply in Game.GetPlayers())
+	{
+		if (ply.CurrentPrimaryWeapon.WeaponItem == WeaponItem.NONE && !ply.IsRolling && !ply.IsDead && !ply.IsStaggering && !ply.IsLayingOnGround)
+		{
+			ply.GiveWeaponItem(DefaultWeapon);
+		}
+	}
+}
+public void mid3(TriggerArgs args)
+{
+	foreach (IPlayer ply in Game.GetPlayers())
+	{
+		if (ply.CurrentSecondaryWeapon.WeaponItem == WeaponItem.NONE && !ply.IsRolling && !ply.IsDead && !ply.IsStaggering && !ply.IsLayingOnGround)
+		{
+			ply.GiveWeaponItem(DefaultWeapon);
+		}
+	}
+}
+public void mid4(TriggerArgs args)
+{
+	foreach (IPlayer ply in Game.GetPlayers())
+	{
+		if (ply.CurrentMeleeWeapon.WeaponItem == WeaponItem.NONE && !ply.IsRolling && !ply.IsDead && !ply.IsStaggering && !ply.IsLayingOnGround)
+		{
+			ply.GiveWeaponItem(DefaultWeapon);
+		}
+	}
+}
+public void mid5(TriggerArgs args)
+{
+	foreach (IPlayer ply in Game.GetPlayers())
+	{
+		if (ply.CurrentWeaponDrawn == WeaponItemType.NONE && !ply.IsRolling && !ply.IsDead && !ply.IsStaggering && !ply.IsLayingOnGround)
+		{
+			ply.GiveWeaponItem(DefaultWeapon);
+		}
+	}
+}

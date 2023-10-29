@@ -1,0 +1,715 @@
+
+
+/*        CHOOSE HOW HULK IS CHOSEN        */
+
+
+public bool Random = 
+
+/*CHANGE TO "true" OR "false"*/
+			true
+
+
+;//==============/OR\==============\\
+
+/* BETWEEN  0 - 7*/
+public int Slot = 0
+
+
+
+;//============/OR\==============\\
+
+
+public string playername = 
+		//INSERT BETWEEN QUOTES//
+/*INSERT NAME*/	"" /*INSERT NAME*/
+
+
+
+
+;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+public int CHARGE = 0;
+public float NegativeStamina = 0f;
+public bool Charging = false;
+public bool temp;
+public bool SMASH = true;
+public Vector2 lastpos = Vector2.Zero;
+public int maxcooldown = 10;
+public IObject bird = (IObject) null;
+public static IPlayer Hulk = (IPlayer) null;
+public IUser HulkS = (IUser) null;
+public int ChargeAcceleration = 0;
+
+private List<IObjectText> pained = new List<IObjectText>();
+
+
+public IPlayer crouchLock = null;
+
+ Random rand = new Random();
+
+public List<victim> Kicked = new List<victim>();
+public List<Siphon> particles = new List<Siphon>();
+
+public class victim{
+	public float ChargedLaunch = 0;
+	public IPlayer Player;
+	public float LastHealth;
+	public victim (IPlayer Hulk){
+		this.Player = Hulk;
+	}
+}
+
+//effects class
+public class Siphon{
+	public IObjectText[] particles = new IObjectText[1];
+	private Vector2 startingVector = Vector2.Zero;
+	public bool active = false;
+	private int lifeTime = 0;
+	private float velocity = 0f;
+	private float accel = 0;
+	
+	public Siphon(){
+		for (int i = 0; i < 1; i++){
+			IObjectText particle= (IObjectText)Game.CreateObject("Text", startingVector);
+			particle.SetText(".");
+			particle.SetTextScale(4);
+			particle.SetWorldPosition(new Vector2(Game.GetCameraMaxArea().Left - 20f, 0f));
+			particles[i] = particle;
+		}
+	}
+	public void Restart(Vector2 approach){
+		active = true;
+		velocity = 0;
+		accel = 0;
+		lifeTime = 200;
+		for (int i = 0; i < 1; i++) particles[i].SetWorldPosition(approach + Hulk.GetWorldPosition() + new Vector2(-3 + (-2 * Hulk.FacingDirection), 10));
+	}
+	public void Update(){
+		if(lifeTime > 0) lifeTime--;
+		else{
+			active = false;
+			for(int i = 0; i < 1; i++)
+			particles[i].SetWorldPosition(new Vector2(Game.GetCameraMaxArea().Left - 20f, 0));
+		}
+		if(active){
+			for (int i = 0; i < 1; i++){
+				IObjectText particle= particles[i];
+				float px = particle.GetWorldPosition().X;
+				float py = particle.GetWorldPosition().Y;
+				
+				float hx = Hulk.GetWorldPosition().X  -3 + (-2 * Hulk.FacingDirection);
+				float hy = Hulk.GetWorldPosition().Y + 10;
+				
+					particle.SetTextScale(3 - velocity );
+					particle.SetWorldPosition(particle.GetWorldPosition() +     (new Vector2(hx-px, hy-py)/(Vector2.Distance(particle.GetWorldPosition(), Hulk.GetWorldPosition()+new Vector2(-3 + (-2 * Hulk.FacingDirection), 10))))*(velocity));
+					
+				
+				if(Vector2.Distance(particle.GetWorldPosition(), Hulk.GetWorldPosition() + new Vector2(-3 + (-2 * Hulk.FacingDirection), 10)) < 10){
+					startingVector = Vector2.Zero;
+					particle.SetWorldPosition(new Vector2(Game.GetCameraMaxArea().Left - 20f, 0));
+					active = false;
+				}
+				
+			}
+			velocity += 0.01f + accel;
+			accel += 0.001f;
+		}
+	}
+}
+
+
+public void AfterStartup(){
+	if (Random) Hulk = Game.GetPlayers()[rand.Next(0,Game.GetPlayers().Length)];
+	else{
+		Hulk = Game.GetPlayers()[Slot];
+		if(Hulk == null) Hulk = Game.GetPlayers()[(Slot > Game.GetPlayers().Length)?  (Game.GetPlayers().Length-1) : 0];
+	}
+	foreach (IPlayer test in Game.GetPlayers()){
+		if (playername != "" && test.Name.ToLower().Contains(playername.ToLower())){
+			Hulk = test;
+		} else {
+			test.SetTeam(PlayerTeam.Team1);
+		}
+	}
+	//instantiate every particle into effects class
+	Hulk.SetTeam(PlayerTeam.Team2);
+	
+	if(Hulk == null) Hulk = Game.GetPlayers()[rand.Next(0,Game.GetPlayers().Length)];
+	//Game.CreatePlayer(new Vector2(0,0));
+	/*
+	
+	//crouch lock things
+	Vector2 shift = new Vector2(0,100); //new Vector2(Game.GetCameraMaxArea().Left - 50, 0);
+	crouchLock = Game.CreatePlayer(new Vector2(0,0) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (5,-10) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (-5,-10) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (-12,-2) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (12,-2) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (12,8) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (-12,8) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (5,18) + shift);
+	Game.CreateObject("Stone00A", new Vector2 (-5,18) + shift);
+	Game.CreateObject("MetalLadder00A", new Vector2 (0,12) + shift);
+	Game.CreateObject("MetalLadder00A", new Vector2 (0,4) + shift);
+	*/
+
+	while (pained.Count < 55){
+		IObjectText a = ((IObjectText)Game.CreateObject("Text", new Vector2(Hulk.FacingDirection *Game.GetCameraMaxArea().Left, 0)));
+		a.SetText(".");
+		a.SetTextColor(Color.Red);
+		a.SetTextScale(2);
+		pained.Add(a);
+	}
+	
+	HulkS = Hulk.GetUser();
+	
+	PlayerModifiers modify = new PlayerModifiers();
+	modify.ProjectileCritChanceTakenModifier= 0f;
+	modify.SizeModifier = 2.0f;
+	modify.SprintSpeedModifier = 0.5f;
+	modify.MeleeDamageTakenModifier = 1.5f;
+	modify.CurrentHealth = 200;
+	modify.MaxHealth = 200;
+	foreach(IPlayer ply in Game.GetPlayers()) if(ply.GetUser() != null){
+		
+		modify.CurrentHealth += 240;
+		modify.MaxHealth += 240;
+		
+	}
+	modify.RunSpeedModifier = 0.5f;
+	
+	modify.MaxEnergy = 100;
+	modify.EnergyConsumptionModifier = 0f;
+	modify.EnergyRechargeModifier = 0.05f;
+	Hulk.SetModifiers(modify);
+	CreateTimer(100,0,"Check","2");
+	Events.UpdateCallback.Start(preciseCheck);
+	CreateTimer(10000, 1, "resetPopup", "4"); 
+	CreateTimer(20,0,"BirdFollow", "3");
+	
+	foreach (IPlayer a in Game.GetPlayers()){
+		if (a != Hulk) Kicked.Add(new victim(a));
+	}
+	for(int i = 12; i > 0; i--) particles.Add(new Siphon());
+	bird = Game.CreateObject("InvisiblePlatform", Vector2.Zero);
+	
+IObjectOnPlayerDamageTrigger damagehulk = (IObjectOnPlayerDamageTrigger)Game.CreateObject("OnPlayerDamageTrigger");
+	damagehulk.SetPlayerSource(Hulk);
+	damagehulk.SetScriptMethod("HulkDamaged");
+	damagehulk.Trigger();
+	
+	
+	IObjectAlterCollisionTile birdAlter = (IObjectAlterCollisionTile)Game.CreateObject("AlterCollisionTile");
+	birdAlter.AddTargetObject(bird);
+	birdAlter.SetDisabledCategoryBits(0xFFFF);
+	
+	
+	
+	Game.ShowPopupMessage("Controls:\nDown - use stamina to charge power into next move\nand then do\n[KEY=JUMP] - Do a smash with all your power\n[KEY=KICK] - Uber Kick\n[KEY=ATTACK] x3 - Strong Uppercut\n[KEY=SPRINT] - to start deadly sprint (sprint for few sec)\n\nTHE MORE YOU CHARGE THE MORE POWER IN YOUR ATTACK\n", new Color(255,65,49));
+	Game.RunCommand("/msg Hulk: version 1.1.1 by Danger Ross");
+	
+}
+
+
+
+
+public void HulkDamaged(TriggerArgs args){
+	//CHARGE = 0;
+}
+
+public void BirdFollow(TriggerArgs args){
+	bird.SetBodyType(BodyType.Static);// ADD STICKY FEET
+	bird.ClearFire();
+	if (!Hulk.IsCrouching){
+		bird.SetWorldPosition(Hulk.GetWorldPosition() + new Vector2(00,12));
+	} else bird.SetWorldPosition(Hulk.GetWorldPosition() + new Vector2(00,3));
+	
+}
+
+public void resetPopup(TriggerArgs args){
+	Game.ShowPopupMessage("");
+}
+
+// fix gib from under, weapon gibs when destroyed (paper ball for sniper), make throwing accurate, add tips, add option to choose winner
+
+
+bool throwingHulk = true;
+IObject hulkThrown = null;
+bool once = false;
+int effectsCool = 0;
+public void preciseCheck(float e){
+	if(Hulk.IsThrowing){
+		if(!once){
+			hulkThrown = null;
+			throwingHulk = true;
+		}
+		once = true;
+	} else once = false;
+	if(throwingHulk && hulkThrown == null){
+		Vector2 pos = Hulk.GetWorldPosition();
+		Area area = new Area (pos.Y+10f,pos.X - 10f,pos.Y - 5f,pos.X + 10f);
+		foreach (IObject obj in Game.GetObjectsByArea(area)){
+			if(obj.IsMissile){
+				hulkThrown=obj;
+				break;
+			}
+		}
+	}
+	if(throwingHulk && hulkThrown != null){
+		throwingHulk = false;
+	//	Game.RunCommand("/msg throwing " + hulkThrown.Name);
+		hulkThrown.SetWorldPosition(hulkThrown.GetWorldPosition() + new Vector2(0,5f));
+		hulkThrown.SetLinearVelocity(hulkThrown.GetLinearVelocity() * (1.5f + (CHARGE/20)));
+		CHARGE = 0;
+	}
+	
+	
+	
+	
+	
+	
+	
+	//third killer punch
+	if(Hulk.IsMeleeAttacking){
+		punchTime++;
+		//Game.RunCommand("/msg " + punchTime);
+		//if(punchTime == 6)Game.RunCommand("/msg COMBO 1");
+		//if(punchTime == 12)Game.RunCommand("/msg COMBO 2");
+		if(punchTime > 64){
+			//Game.RunCommand("/msg COMBO 3");
+			//super punch
+			Vector2 pos = Hulk.GetWorldPosition();
+			int dir = Hulk.FacingDirection;
+			Area area = new Area(pos.Y+20f,pos.X - 15f + (15f * dir),pos.Y-20f,pos.X + 15f + (15f * dir));
+			foreach (IObject obj in Game.GetObjectsByArea(area)){
+					if (obj != Hulk){
+
+						if (obj is IPlayer){
+							IPlayer vic = (IPlayer)obj;
+							foreach(victim a in Kicked) if (a.Player == vic) if (a.LastHealth > vic.GetHealth() && a.Player.IsFalling){
+								punchTime = 0;
+								obj.SetHealth(obj.GetHealth() + (int)(CHARGE/40f));
+								vic.SetInputEnabled(false);
+								
+								obj.SetLinearVelocity(obj.GetLinearVelocity() + new Vector2(Hulk.FacingDirection * -2, 5f + (CHARGE/9f)));
+
+								obj.SetAngularVelocity(obj.GetAngularVelocity() - 5);
+								vic.AddCommand(new PlayerCommand(PlayerCommandType.Fall));
+								CreateTimer(30,1,"Recover","2");
+							}
+						}else {
+							//obj.SetLinearVelocity(new Vector2(dir * 3f + (CHARGE/40f), 4f));
+							//obj.SetAngularVelocity(2f);
+						}
+					}
+			}
+			CHARGE = 0;
+		}
+	} else{
+		if(punchTime != 0){
+			punchTime = 0;
+		}
+	}
+	
+	
+	
+	
+	//update each effect if siphoning is true
+	
+	//jumping
+	if (Hulk.IsInMidAir &&  CHARGE > 10 && Hulk.GetLinearVelocity().Y > 4f && !Hulk.IsFalling && !Charging && !SMASH){
+		Hulk.SetLinearVelocity(new Vector2(Hulk.GetLinearVelocity().X * 2f,Hulk.GetLinearVelocity().Y * 1f) * (CHARGE/40f + 1));
+		
+		SMASH = true;
+		temp = true;
+		
+		PlayerModifiers modify = Hulk.GetModifiers();
+		if (modify.CurrentEnergy >= NegativeStamina * -1){
+			modify.CurrentEnergy = modify.CurrentEnergy + NegativeStamina;
+		} else modify.CurrentEnergy = 0f;
+		NegativeStamina = 0f;
+		Hulk.SetModifiers(modify);
+	}
+	
+	
+
+	//charge effects
+	foreach(Siphon part in particles) part.Update();
+	if(Hulk.IsCrouching && Hulk.GetModifiers().CurrentEnergy > 5){
+		effectsCool++;
+		if(effectsCool > 3){
+			foreach(Siphon part in particles){
+				if(!part.active){
+					effectsCool = 0;
+					//part.Restart(new Vector2(rand.Next(-20,20), rand.Next(-20,20)));
+					double a = rand.NextDouble() * 2 * Math.PI;
+					double r = 50 * Math.Sqrt(rand.NextDouble());
+					// If you need it in Cartesian coordinates
+					double x = r * Math.Cos(a);
+					double y = r * Math.Sin(a);
+					part.Restart(new Vector2((float)x, (float)y));
+					break;
+				}
+			}
+		}		
+		
+		
+		
+		
+		
+		//Vector2 pp = Hulk.GetWorldPosition();
+		/*int loop = 0;
+		foreach(IObjectText red in pained){
+			switch(loop){
+				case (1) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *5.5f * 1.5f- 1 + Hulk.FacingDirection ,1.8f * 1.5f)); break;}case (2) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *5.5f * 1.5f- 1 + Hulk.FacingDirection ,0.8f * 1.5f)); break;}case (3) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *4.5f * 1.5f- 1 + Hulk.FacingDirection ,-0.2f * 1.5f)); break;}case (4) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *4.5f * 1.5f- 1 + Hulk.FacingDirection ,-1.2f * 1.5f)); break;}case (5) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *3.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;}
+				case (6) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;}case (7) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *1.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;}case (8) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *0.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (9) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-0.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;}case (10) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-1.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (11) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-2.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;}
+				case (12) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-3.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (13) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-4.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (14) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-5.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (15) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-6.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (16) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-7.5f * 1.5f- 1 + Hulk.FacingDirection ,-2.2f * 1.5f)); break;} case (17) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-8.5f * 1.5f- 1 + Hulk.FacingDirection ,-1.2f * 1.5f)); break;}
+				case (18) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-7.5f * 1.5f- 1 + Hulk.FacingDirection ,-0.2f * 1.5f)); break;} case (20) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-8.5f * 1.5f- 1 + Hulk.FacingDirection ,0.8f * 1.5f)); break;}case (21) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-9.5f * 1.5f- 1 + Hulk.FacingDirection ,1.8f * 1.5f)); break;}case (22) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-10.5f * 1.5f- 1 + Hulk.FacingDirection ,2.8f * 1.5f)); break;}case (23) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-10.5f * 1.5f- 1 + Hulk.FacingDirection ,3.8f * 1.5f)); break;}
+				case (24) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-10.5f * 1.5f- 1 + Hulk.FacingDirection ,4.8f * 1.5f)); break;} case (25) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-10.5f * 1.5f- 1 + Hulk.FacingDirection ,5.8f * 1.5f)); break;}case (26) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-10.5f * 1.5f- 1 + Hulk.FacingDirection ,6.8f * 1.5f)); break;}case (27) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-9.5f * 1.5f- 1 + Hulk.FacingDirection ,7.8f * 1.5f)); break;} case (28) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-8.5f * 1.5f- 1 + Hulk.FacingDirection ,8.8f * 1.5f)); break;}case (29) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-7.5f * 1.5f- 1 + Hulk.FacingDirection ,8.8f * 1.5f)); break;}
+				case (30) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-6.5f * 1.5f- 1 + Hulk.FacingDirection ,8.8f * 1.5f)); break;}case (31) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-5.5f * 1.5f- 1 + Hulk.FacingDirection ,8.8f * 1.5f)); break;}case (32) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-5.5f * 1.5f- 1 + Hulk.FacingDirection ,9.8f * 1.5f)); break;} case (33) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-5.5f * 1.5f- 1 + Hulk.FacingDirection ,10.8f * 1.5f)); break;}case (34) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-5.5f * 1.5f- 1 + Hulk.FacingDirection ,11.8f * 1.5f)); break;}case (35) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-5.5f * 1.5f- 1 + Hulk.FacingDirection ,12.8f * 1.5f)); break;}
+				case (36) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-4.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;}case (37) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-3.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;}case (38) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-2.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;} case (39) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-1.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;}case (40) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *-0.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;}case (41) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *0.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;}
+				case (42) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *1.5f * 1.5f- 1 + Hulk.FacingDirection ,13.8f * 1.5f)); break;}case (43) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,12.8f * 1.5f)); break;}case (44) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,11.8f * 1.5f)); break;}case (45) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,10.8f * 1.5f)); break;}case (46) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,9.8f * 1.5f)); break;}case (47) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,8.8f * 1.5f)); break;}
+				case (48) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *2.5f * 1.5f- 1 + Hulk.FacingDirection ,7.8f * 1.5f)); break;}case (50) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *3.5f * 1.5f- 1 + Hulk.FacingDirection ,6.8f * 1.5f)); break;}case (51) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *3.5f * 1.5f- 1 + Hulk.FacingDirection ,5.8f * 1.5f)); break;}case (52) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *3.5f * 1.5f- 1 + Hulk.FacingDirection ,4.8f * 1.5f)); break;}case (53) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *4.5f * 1.5f- 1 + Hulk.FacingDirection ,3.8f * 1.5f)); break;}case (54) : { red.SetWorldPosition(pp + new Vector2(Hulk.FacingDirection *5.5f * 1.5f- 1 + Hulk.FacingDirection ,2.8f * 1.5f)); break;}
+			}
+			loop++;
+		}*/
+	}
+	
+}
+bool kickedonce = false;
+int crouchTime = 0;
+int punchTime = 0;
+int punchNumber = 0;
+bool punching = false;
+int ChargeSick = 0;
+int airpunch = 0;
+public void Check(TriggerArgs args){
+	Vector2 pos = Hulk.GetWorldPosition();
+	int dir = Hulk.FacingDirection;
+	
+	
+	
+	//remove guns
+	if (Hulk.CurrentWeaponDrawn.Equals(WeaponItemType.Rifle)){
+//				Game.CreateObject(Hulk.CurrentPrimaryWeapon.WeaponItem,Hulk.GetWorldPosition());
+		Hulk.RemoveWeaponItemType(WeaponItemType.Rifle);	
+			Game.PlayEffect("S_P", Hulk.GetWorldPosition() + new Vector2(0,5));
+			
+			
+		IObject debris = null;		
+		debris = Game.CreateObject("MetalDebris00" +   Encoding.ASCII.GetString(new[]{(byte)rand.Next(65, 70)}));
+		debris.SetWorldPosition (Hulk.GetWorldPosition() + new Vector2(0,5));
+		debris.SetLinearVelocity(new Vector2(Hulk.FacingDirection * 5f, rand.Next(0, 400)/100f));
+		debris.SetAngularVelocity(rand.Next(-2,2));		debris = Game.CreateObject("MetalDebris00" +   Encoding.ASCII.GetString(new[]{(byte)rand.Next(65, 70)}));
+		debris.SetWorldPosition (Hulk.GetWorldPosition() + new Vector2(0,5));
+		debris.SetLinearVelocity(new Vector2(Hulk.FacingDirection * 5f, rand.Next(0, 400)/100f));
+		debris.SetAngularVelocity(rand.Next(-2,2));
+			
+		Game.PlaySound("DestroyMetal", Hulk.GetWorldPosition(),1.0f);
+	} 
+	if (Hulk.CurrentWeaponDrawn.Equals(WeaponItemType.Handgun)){
+//				Game.SpawnWeaponItem(Hulk.CurrentPrimaryWeapon.WeaponItem,Hulk.GetWorldPosition());
+		Hulk.RemoveWeaponItemType(WeaponItemType.Handgun);		
+		Game.PlayEffect("S_P", Hulk.GetWorldPosition() + new Vector2(0,5));
+		//Game.RunCommand("/msg " + Encoding.ASCII.GetString(new[]{(byte)rand.Next(65,71)}));
+		
+		
+		
+		
+		
+		IObject debris = null;
+		debris = Game.CreateObject("MetalDebris00" +   Encoding.ASCII.GetString(new[]{(byte)rand.Next(65, 70)}));
+		debris.SetWorldPosition (Hulk.GetWorldPosition() + new Vector2(0,5));
+		debris.SetLinearVelocity(new Vector2(Hulk.FacingDirection * 5f, rand.Next(0, 400)/100f));
+		debris.SetAngularVelocity(rand.Next(-2,2));
+				debris = Game.CreateObject("MetalDebris00" +   Encoding.ASCII.GetString(new[]{(byte)rand.Next(65, 70)}));
+		debris.SetWorldPosition (Hulk.GetWorldPosition() + new Vector2(0,5));
+		debris.SetLinearVelocity(new Vector2(Hulk.FacingDirection * 5f, rand.Next(0, 400)/100f));
+		debris.SetAngularVelocity(rand.Next(-2,2));
+		
+		Game.PlaySound("DestroyMetal", Hulk.GetWorldPosition(),1.0f);
+	} 
+	
+	
+	
+	//launch thrown players
+	 foreach (victim dude in Kicked){
+		 if (dude.ChargedLaunch != 0 && dude.Player.IsFalling){
+			 dude.Player.SetLinearVelocity(dude.Player.GetLinearVelocity() * dude.ChargedLaunch);
+			 dude.ChargedLaunch = 0f;
+			 CHARGE = 0;
+		 }
+	 }
+	if(!Hulk.IsKicking && !Hulk.IsMeleeAttacking && !Hulk.IsJumpAttacking) foreach(victim update in Kicked) update.LastHealth = update.Player.GetHealth();
+	
+	//Crouch disable all
+	/*if(Hulk.IsCrouching){
+		
+		crouchLock.AddCommand(new PlayerCommand(PlayerCommandType.StartCrouch));
+		HulkS.SetPlayer(crouchLock);
+		if(!crouchLock.IsCrouching && !crouchLock.IsClimbing){
+			Hulk.AddCommand(new PlayerCommand(PlayerCommandType.StopCrouch));
+			HulkS.SetPlayer(Hulk);
+			
+		}
+	} else crouchLock.AddCommand(new PlayerCommand(PlayerCommandType.StartClimbUp));
+	
+	*/
+	
+	
+	//charging
+	if(Hulk.IsCrouching && Hulk.GetModifiers().CurrentEnergy > 4 && !Hulk.IsFalling && !Hulk.IsGrabbing && !Hulk.IsThrowing && !Hulk.IsBlocking){
+		
+		if(ChargeSick < 1|| ChargeSick % (2+(int)(ChargeSick/2)) == 0) CHARGE += 2;
+		
+		
+		if(ChargeSick < 1) ChargeSick = ((int)(CHARGE/15));
+		ChargeSick--;
+		PlayerModifiers modify = Hulk.GetModifiers();
+		modify.ProjectileDamageTakenModifier= 3f;
+		
+		modify.ProjectileCritChanceTakenModifier= 1.7f;
+		modify.MeleeDamageTakenModifier = 4f;
+		modify.CurrentEnergy -= 1;
+		Hulk.SetModifiers(modify);
+		
+		Game.PlayEffect("CFTXT",Hulk.GetWorldPosition() + new Vector2(0,  20f),"" + CHARGE);
+					
+		//effects
+		
+		
+		
+	} else {
+		effectsCool = 0;
+		PlayerModifiers modify = Hulk.GetModifiers();
+				modify.ProjectileDamageTakenModifier= 1f;
+				modify.ProjectileCritChanceTakenModifier= 0f;
+				if(Hulk.IsCrouching)modify.CurrentEnergy -= 1;
+		
+		Hulk.SetModifiers(modify);
+	}
+	if(SMASH){
+		Game.PlayEffect("TR_D",pos + new Vector2(rand.Next(-5,5),rand.Next(-5,5)));
+		Game.PlayEffect("TR_D",pos + new Vector2(rand.Next(-5,5),rand.Next(-5,5)));
+		SMASH = true;
+	}
+		
+		
+		//boy
+		
+	if(Hulk.IsJumpAttacking){
+		if(airpunch < 5){
+			Area area = new Area(pos.Y+25f,pos.X - 25f,pos.Y-25f,pos.X + 25f);
+			foreach (IObject obj in Game.GetObjectsByArea(area)){
+				if (obj != Hulk){
+
+					if (obj is IPlayer){
+						IPlayer vic = (IPlayer)obj;
+						foreach(victim a in Kicked) if (a.Player.Equals(vic)){
+							//Game.RunCommand("/msg found player");
+							if (a.LastHealth > vic.GetHealth() && vic.IsFalling && !vic.IsOnGround
+							){
+
+							if(SMASH)obj.SetLinearVelocity(new Vector2(0f, -30f));
+							else obj.SetLinearVelocity(new Vector2(0f, -15f));
+							//Game.RunCommand("/msg spike!");
+							//obj.SetAngularVelocity(20f);
+							for (int y = 0; y < 6; y++) Game.PlayEffect("H_T",pos + new Vector2(0, (float)(y * (y/2))));
+							}
+						}
+					}
+				}
+			}
+		}
+		airpunch++;
+	} else airpunch = 0;
+		
+		
+	//thesmash
+	if ((Hulk.IsLedgeGrabbing || Hulk.IsOnGround || Hulk.IsClimbing) && SMASH ){
+		SMASH = false;
+			Game.PlayEffect("EXP",pos);
+			Game.PlaySound("Explosion",pos,2f);
+			Area area = new Area(pos.Y+20f,pos.X - 25f,pos.Y-20f,pos.X + 25f);
+			foreach (IObject obj in Game.GetObjectsByArea(area)){
+				if (obj != Hulk){
+					if (obj is IPlayer){
+						obj.SetLinearVelocity(new Vector2(dir * 2f, 8f));
+						if (obj.GetHealth() < 16f) ((IPlayer)obj).Kill();
+					obj.SetHealth(obj.GetHealth()-3f - (CHARGE/2f));
+					Game.PlayEffect("TR_B",obj.GetWorldPosition() + new Vector2(0, -2),0);
+					Game.PlayEffect("TR_B",obj.GetWorldPosition() + new Vector2(0, -2),0);
+					Game.PlaySound("MeleeHitBlunt", obj.GetWorldPosition(), 1.5f);	
+					((IPlayer)obj).SetInputEnabled(false);
+					((IPlayer)obj).AddCommand(new PlayerCommand(PlayerCommandType.Fall));
+						CreateTimer(100,1,"Recover","2");
+					} 
+					
+				}
+				if(obj.Name.Contains("Crate") && !obj.Name.Contains("Hanging") || obj.Name.Contains("Piano") || obj.Name.Contains("Weak") || obj.Name.Contains("Counter") || obj.Name.Contains("Plank") || obj.Name.Contains("Bucket") || obj.Name.Contains("Can") || obj.Name.Contains("Tank") || obj.Name.Contains("Barrel") || !obj.Name.StartsWith("Bg") && obj.Name.Contains("Glass") && !obj.Name.Contains("Debris") || obj.Name.Contains("Lamp") || obj.Name.Contains("Table") && !obj.Name.Contains("Debris")){
+					obj.Destroy();
+				}
+			}
+			for (int x = -5; x< 5; x++) Game.PlayEffect("STM",pos + new Vector2(5f*x*Hulk.FacingDirection,10f));
+			for (int x = -5; x< 5; x++) Game.PlayEffect("H_T",pos + new Vector2(5f*x*Hulk.FacingDirection,2f));
+			Game.PlayEffect("CAM_S",pos,5f,1000f,true);
+			Game.PlaySound("DestroyDefault",pos,2f);
+			CHARGE = 0;
+	}
+
+
+
+	
+	
+	//fire null
+	if(Hulk.IsBurning){
+		Hulk.ClearFire();
+		PlayerModifiers modify = Hulk.GetModifiers();
+		modify.CurrentHealth -= 10f;
+		Hulk.SetModifiers(modify);
+	}
+	
+	
+	//thekick
+	if (Hulk.IsKicking){
+		bool targetted = false;
+		if(!kickedonce){
+			
+			Area area = new Area(pos.Y+20f,pos.X - 15f + (15f * dir),pos.Y-20f,pos.X + 15f + (15f * dir));
+			foreach (IObject obj in Game.GetObjectsByArea(area)){
+					if (obj != Hulk){
+
+						if (obj is IPlayer){
+							IPlayer vic = (IPlayer)obj;
+							foreach(victim a in Kicked) if (a.Player == vic) if (a.LastHealth > vic.GetHealth()){
+								obj.SetHealth(obj.GetHealth()-3f);
+								obj.SetWorldPosition(obj.GetWorldPosition() + new Vector2(8f,0f));
+								vic.SetInputEnabled(false);
+
+								obj.SetLinearVelocity(new Vector2(dir * (3f + (CHARGE/10f)), 4f));
+								targetted = true;
+
+								obj.SetAngularVelocity(obj.GetAngularVelocity() - 5);
+								vic.AddCommand(new PlayerCommand(PlayerCommandType.Fall));
+								CreateTimer(30,1,"Recover","2");
+								for (int x = -15 + (15* dir);x < -15 + (15 * dir); x++) Game.PlayEffect("H_T",pos + new Vector2(5f*x*Hulk.FacingDirection,2f));
+							}
+						}else {
+							//obj.SetLinearVelocity(new Vector2(dir * 3f + (CHARGE/40f), 4f));
+							//obj.SetAngularVelocity(2f);
+						}
+					}
+			}
+			
+			foreach (IObject obj in Game.GetObjectsByArea(area))
+			if (obj != Hulk && !(obj is IPlayer) &&  obj.GetLinearVelocity().X * Hulk.FacingDirection >0){
+				obj.SetLinearVelocity(new Vector2(dir*  (0.6f + ((1.2f + (CHARGE/8f))/(obj.GetMass()*10))/2 + (CHARGE/16f))  , (0.25f + ((0.5f + (CHARGE/15f))/(obj.GetMass()*10))/2  + (CHARGE/30f))));
+				obj.SetAngularVelocity(obj.GetAngularVelocity() * (1 + (CHARGE/15f)));
+				targetted = true;
+			}
+		}
+		if(targetted){
+			CHARGE = 0;
+			kickedonce = true;
+		}
+	} else kickedonce = false;
+	
+	//throwing
+	
+	
+	//disable grab
+	if(Hulk.CaughtByPlayerInGrabID != 0){
+		Game.GetPlayer(Hulk.CaughtByPlayerInGrabID).SetInputEnabled(false);
+		Game.GetPlayer(Hulk.CaughtByPlayerInGrabID).AddCommand(new PlayerCommand(PlayerCommandType.Fall));
+		CreateTimer(30,1,"Recover","2");
+	}
+	
+	
+	//the sprint charge
+	if (Hulk.IsSprinting && CHARGE > 0 && !Charging && !Hulk.IsInMidAir){
+		ChargeAcceleration += 1;//make it so you have to sprint the same direction
+		if(ChargeAcceleration > 4){
+			PlayerModifiers modify = Hulk.GetModifiers();
+			modify.SprintSpeedModifier = 4f;
+			Hulk.SetModifiers(modify);
+			Charging = true;
+			Hulk.SetInputEnabled(false);
+			Hulk.AddCommand(new PlayerCommand(PlayerCommandType.Sprint));
+			Hulk.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,new Vector2(2000f * Hulk.FacingDirection,0), 0));
+		}
+	} else ChargeAcceleration = 0;
+	if (Charging){
+		if(CHARGE > 0)CHARGE-=2;
+				Game.PlayEffect("TR_D",pos + new Vector2(rand.Next(-5,5),rand.Next(-5,5)));
+		Game.PlayEffect("TR_D",pos + new Vector2(rand.Next(-5,5),rand.Next(-5,5)));
+		if(CHARGE <= 0 || lastpos == pos || Hulk.GetModifiers().CurrentEnergy < 2f){
+			PlayerModifiers modify = Hulk.GetModifiers();
+			NegativeStamina = 0f;
+			Hulk.ClearCommandQueue();
+			modify.SprintSpeedModifier = 0.5f;
+			Hulk.SetModifiers(modify);
+			Hulk.SetInputEnabled(true);
+			CHARGE = 0;
+			Charging = false;
+			if (Math.Abs(Hulk.GetLinearVelocity().X) == 0f) Game.TriggerExplosion(pos + new Vector2(4 * dir, 0));
+		}
+		
+					lastpos = pos;
+		Area area = new Area (pos.Y+10f,pos.X - 10f + (10f * dir),pos.Y - 5f,pos.X + 10f + (10f * dir));
+		foreach (IObject obj in Game.GetObjectsByArea(area)){
+			if (obj != Hulk){
+				if (obj is IPlayer){
+					if (obj.GetHealth() < 8f) ((IPlayer)obj).Kill();
+					obj.SetHealth(obj.GetHealth() - 7 - (int)(CHARGE/10));
+						((IPlayer)obj).SetInputEnabled(false);
+						((IPlayer)obj).AddCommand(new PlayerCommand(PlayerCommandType.Fall));
+					obj.SetLinearVelocity(new Vector2(-1 * dir, 5));
+					Game.PlayEffect("TR_B",obj.GetWorldPosition() + new Vector2(0, -2),0);
+					Game.PlayEffect("TR_B",obj.GetWorldPosition() + new Vector2(0, -2),0);
+					Game.PlaySound("MeleeHitBlunt", obj.GetWorldPosition(), 1.5f);
+					
+					CreateTimer(30,1,"Recover","2");
+				}
+				if(obj.GetBodyType() == BodyType.Dynamic && !(obj is IPlayer)){
+					if (obj.Name.Contains("Barrel")||obj.Name == "Crate00" || obj.Name =="Crate01"||obj.Name =="Crate02"||obj.Name == "FilingCab00"|| obj.Name.Contains("GlassSheet") || obj.Name.Contains("FilingCab") || obj.Name.Contains("Trash")||obj.Name.Contains("Table")|| obj.Name.Contains("Desk"))
+						obj.Destroy();
+				}
+			}
+		}
+	}	
+	
+	//Super Player Throw
+	if (Hulk.IsGrabbing){
+		 int id = 0;
+		 if(Hulk.HoldingPlayerInGrabID != 0) id = Game.GetPlayer(Hulk.HoldingPlayerInGrabID).UserIdentifier;
+		 foreach (victim dude in Kicked){
+			 if(dude.Player.UserIdentifier == id && id != 0){
+				 dude.ChargedLaunch = 1.5f + (float)((int)(CHARGE/15));
+			 }
+		 }
+		PlayerModifiers modify = Hulk.GetModifiers();
+		modify.CurrentEnergy = modify.CurrentEnergy + NegativeStamina;
+		Hulk.SetModifiers(modify);
+		NegativeStamina = 0f;
+	}
+	if(!Hulk.IsInMidAir){
+		SMASH = false;
+		temp = false;
+	}
+
+}
+
+public void Recover (TriggerArgs args){
+	foreach (IPlayer dude in Game.GetPlayers())
+		if(dude != Hulk) dude.SetInputEnabled(true);
+}
+
+
+
+public void CreateTimer(int interval, int count, string method, string id) {
+	IObjectTimerTrigger timerTrigger = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger"); 
+	timerTrigger.SetIntervalTime(interval);
+	timerTrigger.SetRepeatCount(count);
+	timerTrigger.SetScriptMethod(method);
+	timerTrigger.CustomId = id;
+	timerTrigger.Trigger();
+}

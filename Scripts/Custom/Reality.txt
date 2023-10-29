@@ -1,0 +1,96 @@
+//============REALITY_SCRIPT===========//
+//=============BY_ARMADYL5=============//
+//================ENJOY================//
+
+
+
+// Feel Free To Use Any Script Or Method You Like //
+
+
+ 
+//==============STARTUP_PREPARE===============//
+
+public void OnStartup(){
+IObjectTimerTrigger Timer = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer.SetIntervalTime(100);
+Timer.SetRepeatCount(0);
+Timer.SetScriptMethod("Reality");
+Timer.Trigger();
+IObjectTimerTrigger Timer1 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer1.SetIntervalTime(2100);
+Timer1.SetRepeatCount(0);
+Timer1.SetScriptMethod("Breath");
+Timer1.Trigger();
+IObjectTimerTrigger Timer2 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer2.SetIntervalTime(600);
+Timer2.SetRepeatCount(0);
+Timer2.SetScriptMethod("Bleed");
+Timer2.Trigger();
+IObjectTimerTrigger Timer3 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer3.SetIntervalTime(400);
+Timer3.SetRepeatCount(0);
+Timer3.SetScriptMethod("Burn");
+Timer3.Trigger();
+}
+
+
+
+
+
+int TotalHits = 0;
+float TotalDamage = 0;
+
+public void Reality(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+TotalHits = ply.Statistics.TotalProjectilesHitBy;
+TotalDamage = ply.Statistics.TotalProjectileDamageTaken;
+if(TotalHits >= 3){
+ply.Kill();
+}
+}
+}
+
+
+
+public void Bleed(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+TotalHits = ply.Statistics.TotalProjectilesHitBy;
+if(TotalHits == 2 && ply.GetHealth() >= 30){
+Vector2 Here = ply.GetWorldPosition();
+ply.SetHealth(ply.GetHealth() - 1);
+Game.PlayEffect("BLD",Here);
+}
+}
+}
+
+
+public void Burn(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+if(ply.IsBurning && !ply.IsDead){
+Vector2 Here = ply.GetWorldPosition();
+ply.SetHealth(ply.GetHealth() - 1);
+Game.PlayEffect("TR_D",Here);
+}
+}
+}
+
+
+
+
+public void Breath(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+if(ply.IsIdle && !ply.IsDead){
+if(ply.FacingDirection == 1){
+Vector2 Here = ply.GetWorldPosition() + new Vector2(7,10);
+Game.PlayEffect("TR_D",Here);
+Game.PlayEffect("TR_D",Here);
+}
+if(ply.FacingDirection == -1){
+Vector2 Here = ply.GetWorldPosition() + new Vector2(-7,10);
+Game.PlayEffect("TR_D",Here);
+Game.PlayEffect("TR_D",Here);
+}
+}
+}
+}
+

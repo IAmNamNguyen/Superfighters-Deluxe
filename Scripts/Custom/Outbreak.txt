@@ -1,0 +1,269 @@
+//Outbreak script by Sree
+
+//-----------BOSS STATS------------// 
+const float Boss_Sprint_Speed = 1.4f;
+const float Boss_Run_Speed = 1.2f;
+const float Boss_Melee_Damage = 1.5f;
+const int Boss_Max_Health = 300;
+//---------------------------------// 
+
+//----------ZOMBIE STATS-----------// 
+const float Zomb_Sprint_Speed = 1.3f;
+const float Zomb_Run_Speed = 1.2f;
+const float Zomb_Melee_Damage = 1.3f;
+const int Zomb_Max_Health = 60;
+//---------------------------------// 
+
+//------------SOLE SURVIVOR STATS------------//
+const float Sole_Survivor_Sprint_Speed = 1.2f;
+const float Sole_Survivor_Run_Speed = 1.1f;
+const int Sole_Survivor_Max_Health = 150;
+//-------------------------------------------// 
+
+//----------------GENERAL------------------// 
+const bool Can_Zomb_Pickup_Weapons = false;
+const bool Zombify_Humans_On_Death = true;
+const bool Enable_Sole_Survivor = true;
+//-----------------------------------------// 
+
+private class data 
+{
+ private IPlayer Player = null;
+ private IUser User = null;
+
+ public data(IPlayer p, IUser u)
+ {
+  Player = p;
+  User = u;
+ }
+
+ public IPlayer GetPlayer() 
+ {
+  return Player;
+ }
+ public IUser GetUser() 
+ {
+  return User;
+ }
+}
+
+IObjectTimerTrigger timer (int interval, int repeat, string method)
+{ 
+ IObjectTimerTrigger t = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+ t.SetIntervalTime(interval);
+ t.SetRepeatCount(repeat);
+ t.SetScriptMethod(method);
+ t.Trigger();
+
+ return t;
+}
+
+public int count = 0;
+
+private List<data> humans = new List<data>();
+private List<IPlayer> zombies = new List<IPlayer>();
+private List<IPlayer> survivors = new List<IPlayer>();
+
+public void OnStartup()
+{
+ SetTeam();
+
+ IObjectTrigger deathTrigger = (IObjectTrigger)Game.CreateObject("OnPlayerDeathTrigger"); 
+ deathTrigger.SetScriptMethod("ondeath");
+
+ timer(200,0,"reanimate");
+ timer(100,0,"wepcheck");
+ timer(100,0,"removebots");
+ timer(100,0,"solesurvivor");
+}
+
+public void SetTeam()
+{
+ IPlayer[] players = Game.GetPlayers(); 
+ Random r = new Random();
+ int rp = r.Next(0,Game.GetPlayers().Length);
+
+ for(int i = 0; i < Game.GetPlayers().Length; i++)
+ {
+  if(i == rp)
+  { 
+   players[i].SetTeam(PlayerTeam.Team3);
+   boss(players[i]);
+   zombies.Add(players[i]);
+  }
+  else 
+  { 
+   players[i].SetTeam(PlayerTeam.Team1);
+   survivors.Add(players[i]);
+  }
+ }
+}
+ 
+public void boss(IPlayer p)
+{
+ PlayerModifiers m = p.GetModifiers();
+ m.SprintSpeedModifier = Boss_Sprint_Speed;
+ m.RunSpeedModifier = Boss_Run_Speed;
+ m.MeleeDamageDealtModifier = Boss_Melee_Damage;
+ m.FireDamageTakenModifier= 0.5f;
+ m.MaxHealth = Boss_Max_Health;
+ m.CurrentHealth = Boss_Max_Health;
+ m.SizeModifier = 1.2f;
+ p.SetModifiers(m);
+
+ IProfile pr = p.GetProfile();
+ pr.Skin = new IProfileClothingItem("Zombie", " ");
+ pr.Head = new IProfileClothingItem("Headband", "ClothingLightGray");
+ pr.ChestOver = new IProfileClothingItem("Robe", "ClothingLightGray");
+ pr.Legs = new IProfileClothingItem("Pants", "ClothingLightGray");
+ pr.Hands = pr.Feet = pr.Hands = pr.ChestUnder = pr.Waist = pr.Accesory = null;
+ p.SetProfile(pr);  
+}
+
+public void zombie(IUser u)
+{
+ IPlayer p = u.GetPlayer();
+ PlayerModifiers m = p.GetModifiers();
+ m.SprintSpeedModifier = Zomb_Sprint_Speed;
+ m.RunSpeedModifier = Zomb_Run_Speed;
+ m.MeleeDamageDealtModifier = Zomb_Melee_Damage;
+ m.MaxHealth = Zomb_Max_Health;
+ m.CurrentHealth = Zomb_Max_Health;
+ p.SetModifiers(m);
+
+ IProfile pr = u.GetProfile(); 
+ pr.Skin = new IProfileClothingItem("Zombie", " ");
+ p.SetProfile(pr);
+}
+
+public void ondeath(TriggerArgs args)
+{
+ if(Zombify_Humans_On_Death)
+ {
+  if(!Game.IsGameOver && survivors.Count != 1)
+  {
+   IPlayer player = (IPlayer)args.Sender;
+   if(player.GetTeam() == PlayerTeam.Team1)
+   {
+    humans.Add(new data(player, player.GetUser()));
+    survivors.Remove(player);
+   }
+  }
+ }
+}
+
+public void reanimate(TriggerArgs args)
+{ 
+ for (int i = humans.Count - 1; i >= 0; i--)
+ {
+  data ply = humans[i];
+  if (ply.GetUser() != null)
+  {
+   render(ply.GetUser());
+   ply.GetPlayer().Remove();
+   humans.RemoveAt(i);
+  }
+ }
+}
+
+public void render(IUser user)
+{ 
+ if(user.GetPlayer() != null)
+ {
+  Vector2 zpos = user.GetPlayer().GetWorldPosition();
+  IPlayer zp = Game.CreatePlayer(zpos);
+  zp.SetUser(user);
+  zp.SetTeam(PlayerTeam.Team3);
+  zombie(user);
+  zombies.Add(zp);
+ }
+}
+
+public void wepcheck(TriggerArgs args)
+{
+ if(!Can_Zomb_Pickup_Weapons)
+ {
+  foreach(IPlayer p in zombies)
+  {
+   if(p.GetTeam() == PlayerTeam.Team3)
+   { 
+    Vector2 pos = p.GetWorldPosition();
+    WeaponItem wep = WeaponItem.NONE;
+
+    if (p.CurrentSecondaryWeapon.WeaponItemType != WeaponItemType.NONE)
+    {
+     wep = p.CurrentSecondaryWeapon.WeaponItem;
+     p.RemoveWeaponItemType(WeaponItemType.Handgun);
+     Game.SpawnWeaponItem(wep,pos);
+    } 
+ 
+    if (p.CurrentPrimaryWeapon.WeaponItemType != WeaponItemType.NONE)
+    {
+     wep = p.CurrentPrimaryWeapon.WeaponItem;
+     p.RemoveWeaponItemType(WeaponItemType.Rifle);
+     Game.SpawnWeaponItem(wep,pos);
+    }
+
+    if (p.CurrentThrownItem.WeaponItemType!=WeaponItemType.NONE)
+    {
+     wep = p.CurrentThrownItem.WeaponItem;
+     p.RemoveWeaponItemType(WeaponItemType.Thrown);
+     Game.SpawnWeaponItem(wep,pos);
+    }
+   }
+  }
+ }
+}
+
+public void solesurvivor(TriggerArgs args)
+{
+if(Enable_Sole_Survivor)
+ {
+  if(survivors.Count == 1 && count == 0)
+  {
+   IPlayer s = survivors[0];
+   PlayerModifiers sm = s.GetModifiers();
+   sm.SprintSpeedModifier = Sole_Survivor_Sprint_Speed;
+   sm.RunSpeedModifier = Sole_Survivor_Run_Speed;;
+   sm.MaxHealth = Sole_Survivor_Max_Health;
+   sm.CurrentHealth = Sole_Survivor_Max_Health;
+   s.SetModifiers(sm);
+
+   IProfile sp = s.GetProfile();
+   sp.Head = new IProfileClothingItem("Headband", "ClothingDarkBrown");
+   sp.ChestOver = new IProfileClothingItem("KevlarVest", "ClothingDarkBrown");
+   sp.ChestUnder = new IProfileClothingItem("MilitaryShirt", "ClothingDarkRed");
+   sp.Legs = new IProfileClothingItem("PantsBlack", "ClothingDarkGray");
+   sp.Hands = new IProfileClothingItem("Gloves", "ClothingDarkGray");
+   sp.Legs = new IProfileClothingItem("CamoPants", "ClothingDarkBrown", "ClothingDarkYellow");
+   sp.Feet = new IProfileClothingItem("ShoesBlack", "ClothingDarkGray");
+   sp.Waist = sp.Accesory = null;
+   s.SetProfile(sp);
+
+   s.RemoveWeaponItemType(WeaponItemType.Handgun);
+   s.GiveWeaponItem(WeaponItem.MAGNUM); 
+  
+   if(s.CurrentPrimaryWeapon.WeaponItemType == WeaponItemType.NONE)
+   s.GiveWeaponItem(WeaponItem.ASSAULT);
+
+   if (s.CurrentMeleeWeapon.WeaponItemType == WeaponItemType.NONE)
+   s.GiveWeaponItem(WeaponItem.MACHETE);
+
+   Game.PlayEffect("CFTXT", s.GetWorldPosition() + new Vector2(0,4), "Sole survivor");
+   count++;
+  }
+ }
+}
+
+public void removebots(TriggerArgs args)
+{ 
+ foreach (IPlayer p in Game.GetPlayers())
+ {
+  if(p.IsBot || p.IsAIControlled || p.GetUser() == null)
+  {
+   p.Remove();
+  }
+ }
+}
+
+   

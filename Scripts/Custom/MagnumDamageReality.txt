@@ -1,0 +1,23 @@
+//Magnum Damage Reality made by Nguyen Nam
+//PLEASE, IF YOU COPY SOME METHOD FROM HERE, BE SURE TO GIVE SOME CREDIT
+//Edited from a script "Reality" by ARMADYL5
+// mapmodes: versus, custom, campaign, survival
+public void OnStartup(){
+IObjectTimerTrigger Timer = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer.SetIntervalTime(100);
+Timer.SetRepeatCount(0);
+Timer.SetScriptMethod("MagnumDamage");
+}
+
+int TotalHits = 0;
+float TotalDamage = 0;
+
+public void MagnumDamage(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+TotalHits = ply.Statistics.TotalProjectilesHitBy;
+TotalDamage = ply.Statistics.TotalProjectileDamageTaken;
+if(TotalHits >= 2){
+ply.Kill();
+}
+}
+}

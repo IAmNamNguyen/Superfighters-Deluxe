@@ -1,0 +1,954 @@
+/*
+* author: Zoke 
+* description: v1.2
+* mapmodes: versus, custom
+*/
+
+/*
+ ___________________________________
+/ _________________________________ \
+||---------------------------------||
+||---------------------------------||
+||-------Ultimate Battle Mod-------||
+||--------------v1.2---------------||
+||---------------------------------||
+||-------------By Zoke-------------||
+||---------------------------------||
+||_________________________________||
+\___________________________________/
+             
+                              
+                            _-'''"'-,     
+                         _-' |  **  |  
+                      _-'    | **** |    
+                   _-'       |  **  |  
+                _-'|         |      |
+             _-'  _*         |      |
+          _-' |_-"      __--''\    /
+       _-'         __--'     __*--'
+     -'       __-''    __--*__-"`
+    |    _--''   __--*"__-'`  
+    |_--"  .--=`"__-||"  
+    |      |  |\\   ||
+    | **** |  | \\ //
+    | **** |  |___//
+    | **** |  |   
+    | **** |  |         
+    | **** |  |
+    | **** |  |
+    | **** |  |
+    | **** |  |
+    |______,-'"
+
+*/
+
+//For any bugs or suggestions please contact me!
+//Discord: ZokeGamer#4155
+
+
+//********************Customizable Code*********************\\
+
+
+
+//===============Settings===============\\
+
+
+Boolean KeepBodies = false;          //Lags my server :c
+
+int RespawnTime = 8000;              //In milliseconds (1000 milliseconds = 1 second)
+		
+Boolean AllowMeleeDamage = true;     //Will be automatically true if the Ranged weapons preset is activated
+
+int ShowSettingsTime = 15000;        //Sets for how much time these settings will be shown in-game (0 if you don't want to show them)
+
+Boolean InfiniteAmmo = false;        //Will be automatically true if the game is NOT in Normal Mode
+
+
+//-----Popup Color-----\\
+
+
+Boolean Green = false;               //Set the color of the popup to whatever you like
+Boolean Red = false;                 //Only one should be true else the popup will be blue
+Boolean Blue = true;
+
+
+
+//------------Modes------------\\
+
+
+//Make sure only one of these are true!!
+//Failure to do so will result in Random Mode to be chosen
+
+
+//******************************************************
+
+
+/*
+    ===Random Mode===
+    -Chooses a random mode, in which their own rules apply
+    -Can be either:
+    -Normal Mode
+    -Ranged Sequence Mode
+    -Melee Sequence Mode
+
+    *Custom Sequence Mode is not chosen from here
+*/
+
+Boolean RandomMode = true;
+
+
+//******************************************************
+
+
+/*
+    ===Normal Mode===
+    -Weapons spawn normally
+    -No forced weapon sequence
+    -Number of lives from below will be used in this mode
+    -AllowMeleeDamage as defined above
+    -InfiniteAmmo as defined above
+*/
+
+Boolean NormalMode = false;
+int lives = 6;
+
+
+//******************************************************
+
+
+/*
+    ===Ranged Sequence Mode===
+    -Weapons don't spawn
+    -Forces to only have weapons from the Ranged sequence preset
+    -Lives depend on the size of the preset (default is 6)
+    -AllowMeleeDamage automatically set to false
+    -InfiniteAmmo automatically set to true
+*/
+
+Boolean RangedSequenceMode = false;
+
+
+//******************************************************
+
+
+/*
+    ===Melee Sequence Mode===
+    -Weapons don't spawn
+    -Forces to only have weapons from the Melee sequence preset
+    -Lives depend on the size of the Melee preset (default is 6)
+    -AllowMeleeDamage automatically set to true
+    -InfiniteAmmo automatically set to true
+*/
+
+Boolean MeleeSequenceMode = false;
+
+
+//*******************************************************
+
+
+/*
+    ===Custom Sequence Mode===
+    -Weapons don't spawn
+    -Forces to only have weapons from the Custom sequence preset
+    -Lives depend on the size of the Custom preset (default is 3 so you should edit the array!)
+    -You might want to edit the "CustomWpns" array in "Advanced settings" if you are going to use this!
+    -AllowMeleeDamage must be manually enabled/disabled as appropiate
+    -InfiniteAmmo automatically set to true
+*/
+
+Boolean CustomSequenceMode = false;
+
+
+//*******************************************************
+
+
+//===============Weapon Presets===============\\
+
+
+/*
+
+  These ones edit if you have some script API knowledge
+  Note that length of the arrays define the number of lives
+  Also note that these lists are traversed in REVERSE ORDER (last item will be starting weapon)
+
+*/
+
+WeaponItem[] MeleeWpns = {
+                           WeaponItem.KATANA,
+                           WeaponItem.CHAIN,
+                           WeaponItem.MACHETE,
+                           WeaponItem.KNIFE,
+                           WeaponItem.BAT,
+                           WeaponItem.BATON
+                         };
+
+WeaponItem[] RangedWpns = {
+                            WeaponItem.BAZOOKA,
+                            WeaponItem.M60,
+                            WeaponItem.SNIPER,
+                            WeaponItem.ASSAULT,
+                            WeaponItem.REVOLVER,
+                            WeaponItem.PISTOL
+                          };
+
+
+//This array below is for the CustomSequenceMode
+WeaponItem[] CustomWpns = {
+                            WeaponItem.BAZOOKA,
+                            WeaponItem.M60,
+                            WeaponItem.SNIPER,
+                          };
+
+
+//****************End of Customizable Code********************\\
+
+
+
+int[] UniqueIds;
+int[] PlayerLives;
+Boolean[] IsPlaying;
+IUser[] Users;
+IProfile[] Profiles;
+PlayerTeam[] Teams;
+
+IObject[] Spawns;
+WeaponItem[] wpns;
+IObjectTimerTrigger RefreshTrigger;
+IObjectTimerTrigger CheckWeaponTrigger;
+IObjectTimerTrigger GiveWeaponTrigger;
+Random ran = new Random();
+Boolean Gameover = false;
+ArrayList BodiesToDispose = new ArrayList();
+ArrayList IndexesToRespawn = new ArrayList(); //Index of the id of the person who will be respawned
+PlayerModifiers mod;
+Boolean ShowSettings = true;
+
+IPlayer CPU1;
+IPlayer CPU2;
+
+String sequence = "";
+String settings = "";
+
+public void OnStartup()
+{
+	UniqueIds = new int[Game.GetPlayers().Length];
+	PlayerLives = new int[UniqueIds.Length];
+	IsPlaying = new Boolean[UniqueIds.Length];
+	Users = new IUser[UniqueIds.Length];
+	Profiles = new IProfile[UniqueIds.Length];
+	Teams = new PlayerTeam[UniqueIds.Length];
+	
+	mod = new PlayerModifiers();
+	mod.MeleeDamageTakenModifier = 0;
+
+	Boolean DefaultMode = true;
+	if(NormalMode)
+	{
+		if(!(RandomMode || MeleeSequenceMode || RangedSequenceMode || CustomSequenceMode))
+			DefaultMode = false;
+	}
+	else if(RandomMode)
+	{
+		if(!(NormalMode || MeleeSequenceMode || RangedSequenceMode || CustomSequenceMode))
+			DefaultMode = false;
+	}
+	else if(CustomSequenceMode)
+	{
+		if(!(NormalMode || MeleeSequenceMode || RangedSequenceMode || RandomMode))
+			DefaultMode = false;
+	}
+	else if(MeleeSequenceMode)
+	{
+		if(!(NormalMode || RandomMode || RangedSequenceMode || CustomSequenceMode))
+			DefaultMode = false;
+	}
+	else if(RangedSequenceMode)
+	{
+		if(!(NormalMode || MeleeSequenceMode || RandomMode || CustomSequenceMode))
+			DefaultMode = false;
+	}
+	if(DefaultMode)
+	{
+		NormalMode = false;
+		RandomMode = true;
+		RangedSequenceMode = false;
+		CustomSequenceMode = false;
+		MeleeSequenceMode = false;
+	}
+
+
+	if(RandomMode)
+	{
+		int rndm = ran.Next(3);
+		if(rndm == 0)
+		{
+			MeleeSequenceMode = true;
+		}
+		else if(rndm == 1)
+		{
+			RangedSequenceMode = true;
+		}
+		else if(rndm == 2)
+		{
+			NormalMode = true;
+		}
+	}
+
+	if(MeleeSequenceMode)
+	{
+		wpns = MeleeWpns;
+		sequence = "Melee";
+		AllowMeleeDamage = true;
+		InfiniteAmmo = true;
+	}
+	if(RangedSequenceMode)
+	{
+		wpns = RangedWpns;
+		sequence = "Ranged";
+		AllowMeleeDamage = false;
+		InfiniteAmmo = true;
+	}
+	if(CustomSequenceMode)
+	{
+		wpns = CustomWpns;
+		sequence = "Custom";
+		InfiniteAmmo = true;
+	}
+
+	if(NormalMode)
+	{
+		wpns = new WeaponItem[lives];
+		sequence = "Normal";
+	}
+
+	for(int i = 0; i < Game.GetPlayers().Length; i++)
+	{
+		IPlayer ply = Game.GetPlayers()[i];
+		if(ply != null && !ply.IsDead)
+		{
+			if(!NormalMode)
+				ply.GiveWeaponItem(wpns[wpns.Length-1]);
+			if(!AllowMeleeDamage)
+				ply.SetModifiers(mod);
+			IsPlaying[i] = true;
+			UniqueIds[i] = ply.UniqueId;
+			PlayerLives[i] = wpns.Length;
+			Users[i] = ply.GetUser();
+			Profiles[i] = ply.GetProfile();
+			Teams[i] = ply.GetTeam();
+		}
+	}
+
+	Boolean DefaultColor = true;
+	if(Green)
+	{
+		if(!(Red || Blue))
+			DefaultColor  = false;
+	}
+	else if(Red)
+	{
+		if(!(Green || Blue))
+			DefaultColor  = false;
+	}
+	else if(Blue)
+	{
+		if(!(Red || Green))
+			DefaultColor  = false;
+	}
+
+	if(DefaultColor)
+	{
+		Green = false;
+		Red = false;
+		Blue = true;
+	}
+
+	if(InfiniteAmmo)
+		Game.RunCommand("/ia 1");
+	Game.RunCommand("/msg Ultimate Battle Mod v1.2 by Zoke");
+	Game.RunCommand("/msg Last player or team standing wins!");
+	
+
+	if(RandomMode)
+		settings += "Mode: Random";
+	else
+		settings += "Mode: " + sequence;
+	
+	if(!AllowMeleeDamage)
+		settings += "\nMelee damage: OFF";
+	else
+		settings += "\nMelee damage: ON";
+
+	if(InfiniteAmmo)
+		settings += "\nInfinite ammo: ON";
+	else
+		settings += "\nInfinite ammo: OFF";
+
+	settings += "\nRespawn: " + RespawnTime/1000.0 + " sec.";
+	
+	if(KeepBodies)
+		settings += "\nKeep bodies: ON";
+	else
+		settings += "\nKeep bodies: OFF";
+
+	if(Green)
+		settings += "\nColor: Green";
+	if(Red)
+		settings += "\nColor: Red";
+	if(Blue)
+		settings += "\nColor: Blue";
+	
+	settings += "\nSettings shown: " + ShowSettingsTime/1000.0 + " sec.";
+
+	
+	//*******Workaround because Game.AutoVictoryCondition doesn't work :C
+	IObject plat = Game.CreateObject("WoodPlat01B");
+	plat.SetWorldPosition(new Vector2(-50000,100));
+	CPU1 = Game.CreatePlayer(new Vector2(-50000,110));
+	CPU1.SetNametagVisible(false);
+
+	plat = Game.CreateObject("WoodPlat01B");
+	plat.SetWorldPosition(new Vector2(50000,100));
+	CPU2 = Game.CreatePlayer(new Vector2(50000,110));
+	CPU2.SetNametagVisible(false);
+	//*******
+
+	Spawns = Game.GetObjectsByName("SpawnPlayer");
+	if(!NormalMode)
+	{
+		Object[] Obj = Game.GetObjectsByName(new string[]{ "SpawnWeaponArea", "SpawnWeaponAreaCeiling","SpawnWeapon"});
+		foreach(IObject Object in Obj)
+		{
+			Object.Remove();
+		}
+	}
+	
+	RefreshTrigger = Game.CreateObject("TimerTrigger") as IObjectTimerTrigger;
+	RefreshTrigger.SetIntervalTime(10);
+	RefreshTrigger.SetRepeatCount(0);
+	RefreshTrigger.SetScriptMethod("Refresh");
+	RefreshTrigger.Trigger();
+
+	GiveWeaponTrigger = Game.CreateObject("TimerTrigger") as IObjectTimerTrigger;
+	GiveWeaponTrigger.SetIntervalTime(7000);
+	GiveWeaponTrigger.SetRepeatCount(0);
+	GiveWeaponTrigger.SetScriptMethod("GiveWeapon");
+	GiveWeaponTrigger.Trigger();
+
+	CheckWeaponTrigger = Game.CreateObject("TimerTrigger") as IObjectTimerTrigger;
+	CheckWeaponTrigger.SetIntervalTime(50);
+	CheckWeaponTrigger.SetRepeatCount(0);
+	CheckWeaponTrigger.SetScriptMethod("CheckWeapon");
+	CheckWeaponTrigger.Trigger();
+
+	if(ShowSettingsTime != 0)
+	{
+		IObjectTimerTrigger SettingsTrigger = Game.CreateObject("TimerTrigger") as IObjectTimerTrigger;
+		SettingsTrigger.SetIntervalTime(ShowSettingsTime);
+		SettingsTrigger.SetRepeatCount(1);
+		SettingsTrigger.SetScriptMethod("HideSettings");
+		SettingsTrigger.Trigger();
+	}
+	else
+		ShowSettings = false;
+	
+	UpdateBoard();
+}
+
+public void Refresh(TriggerArgs args)
+{
+	try
+	{
+	//Start try block
+
+		//Check if they killed someone
+	
+		foreach(int ui in UniqueIds)
+		{
+			//Get arrayIndex given the UniqueId 
+			int rayIndex = GetIndexById(ui);
+			if(Users[rayIndex].IsRemoved)
+			{
+				IsPlaying[rayIndex] = false;
+				continue;
+			}
+			if(!IsPlaying[rayIndex])
+				continue;
+
+			//See if the script already took care of this guy
+			//************
+			
+			
+
+			Boolean alreadyTakenCareOf = false;
+			foreach(int h in IndexesToRespawn)
+			{
+				if(h == rayIndex)
+				 	alreadyTakenCareOf = true;
+			}
+			if(alreadyTakenCareOf) continue;
+
+
+			//************
+
+			IPlayer dead = Game.GetPlayer(ui);
+
+			//null => Gibbed or removed, either way he's dead
+			if(dead == null || dead.IsDead)
+			{
+				Revive(ui);
+				Died(ui);
+			}	
+		}
+
+	}//End of try block
+	catch(Exception e)
+	{
+		//Exception thrown if someone got kicked or left the game suddenly
+		e.ToString();
+		foreach(int id in UniqueIds)
+		{
+			for(int i = 0; i < UniqueIds.Length; i++)
+			{
+				if(UniqueIds[i] == id)
+				{
+					if(Users[i].IsRemoved)
+					{
+						IsPlaying[i] = false;
+					}
+				}
+			}
+		}
+		UpdateBoard();
+	}
+	
+	int active = 0;
+	foreach(IUser u in Users)
+	{
+		if(u != null && !u.IsRemoved)
+		{
+			active++;
+		}
+	}
+	if(active <= 1)
+	{
+		Game.SetGameOver("Not Enough Players!");
+	}
+	
+	//Check for gameover
+	if(Game.IsGameOver) return;
+	int num = 0;
+	foreach(int ui in UniqueIds)
+	{
+		int index = GetIndexById(ui);
+		if(IsPlaying[index])
+			num = num + 1;
+	}
+	if(num == 1 || num == 0)
+	{
+		KillCPUs();
+		foreach(int ui in UniqueIds)
+		{
+			int index = GetIndexById(ui);
+			if(IsPlaying[index])
+			{	
+				if(PlayerTeam.Independent != Teams[index])
+				{
+					switch(Teams[index])
+					{
+						case PlayerTeam.Team1: Game.SetGameOver("Team 1 wins!"); break;
+						case PlayerTeam.Team2: Game.SetGameOver("Team 2 wins!"); break;
+						case PlayerTeam.Team3: Game.SetGameOver("Team 3 wins!"); break;
+						case PlayerTeam.Team4: Game.SetGameOver("Team 4 wins!"); break;
+						default: break;
+					}
+				}
+				else
+					Game.SetGameOver(Profiles[index].Name + " wins!");
+			}
+		}
+	}
+
+	PlayerTeam t = PlayerTeam.Independent;
+	Boolean StillPlaying = false;
+	if(num > 1)
+	{
+		for(int i = 0; i < UniqueIds.Length; i++)
+		{
+			if(IsPlaying[i] && Teams[i] != PlayerTeam.Independent)
+				t = Teams[i];
+		}
+		if(t == PlayerTeam.Independent)
+			StillPlaying = true;
+		if(!StillPlaying)
+		{
+			for(int i = 0; i < UniqueIds.Length; i++)
+			{
+				if(IsPlaying[i] && t != Teams[i])
+					StillPlaying = false;
+			}
+			if(!StillPlaying)
+			{
+				KillCPUs();
+			}
+		}
+	}
+
+
+}
+
+public void Died(int ui)
+{
+	int i = GetIndexById(ui);
+
+	PlayerLives[i] = PlayerLives[i] - 1;
+
+	IPlayer ply = Game.GetPlayer(ui);
+	if(ply != null)
+	{
+		ply.RemoveWeaponItemType(WeaponItemType.Rifle);
+		ply.RemoveWeaponItemType(WeaponItemType.Handgun);
+	}
+
+	if(PlayerLives[i] == 0)
+	{
+		IsPlaying[i] = false;
+		Game.RunCommand("/msg " + Profiles[i].Name + " has run out of lives!");
+	}
+	UpdateBoard();
+	
+
+/* Maybe later add popups when you die?
+	String word = "";
+	int number = ran.Next(3);
+	switch(number)
+	{
+		case 0: word = "Tango down."; break;
+		case 1: word = "Kill confirmed."; break;
+		case 2: word = "He's down."; break;
+	}
+	Game.PlayEffect("CFTXT", ply.GetWorldPosition(),word);
+*/
+
+}
+
+public void Revive(int id)
+{
+	int index = GetIndexById(id);
+	
+	if(index == -1 || PlayerLives[index] == 0)
+		return;
+
+	foreach(int h in IndexesToRespawn)
+	{
+		if(h == index)
+			return;
+	}
+
+	IndexesToRespawn.Add(index);
+
+	IPlayer dead = Game.GetPlayer(id);
+	
+	if(dead != null && !NormalMode)
+	{
+		dead.RemoveWeaponItemType(WeaponItemType.Rifle);
+		dead.RemoveWeaponItemType(WeaponItemType.Handgun);
+	}
+	
+	if(!KeepBodies && dead != null) 
+		BodiesToDispose.Add(dead);
+	
+	IObjectTimerTrigger tt = Game.CreateObject("TimerTrigger") as IObjectTimerTrigger;
+	tt.SetIntervalTime(RespawnTime);
+	tt.SetRepeatCount(1);
+	tt.SetScriptMethod("Respawn");
+	tt.Trigger();
+}
+
+public void Respawn(TriggerArgs args)
+{	
+	if(Game.IsGameOver)
+		return;
+	if(IndexesToRespawn.Count == 0) 
+	{
+		Game.WriteToConsole("Something weird happened :O");
+		return;
+	}
+
+	if(!KeepBodies && BodiesToDispose.Count > 0)
+	{
+		if((BodiesToDispose[0] as IObject) != null)
+			(BodiesToDispose[0] as IObject).Remove();
+		BodiesToDispose.RemoveAt(0);
+	}
+	int SpawnIndex = ran.Next(Spawns.Length);
+	int index = (int)IndexesToRespawn[0];
+	IndexesToRespawn.RemoveAt(0);
+	
+	
+	IUser user = Users[index];
+	IProfile profile = Profiles[index];
+	
+	if(!IsPlaying[index])
+		return;
+	if(Users[index].IsRemoved)
+	{
+		IsPlaying[index] = false;
+		UpdateBoard();
+		return;
+	}
+	IPlayer plyN = null;
+
+	if(Spawns.Length == 0)
+	{
+		plyN = Game.CreatePlayer(new Vector2(0,0));
+	}
+	else
+	{
+		plyN = Game.CreatePlayer((Spawns[SpawnIndex] as IObject).GetWorldPosition());
+	}
+	UniqueIds[index] = plyN.UniqueId;	
+	if(!AllowMeleeDamage)
+		plyN.SetModifiers(mod);
+	plyN.SetUser(user);
+	plyN.SetProfile(profile);
+	if(!NormalMode)
+		plyN.GiveWeaponItem(wpns[PlayerLives[index]-1]);
+}
+
+public void CheckWeapon(TriggerArgs args)
+{
+	if(Game.IsGameOver || NormalMode)
+		return;
+
+	foreach(int p in UniqueIds)
+	{
+		IPlayer ply = Game.GetPlayer(p);
+		if(ply == null || ply.IsDead)
+			continue;
+
+		int index = GetIndex(ply);
+
+		if(Users[index].IsRemoved)
+		{
+			IsPlaying[index] = false;
+			UpdateBoard();
+			return;
+		}
+
+		if(!IsPlaying[index])
+			continue;
+
+		if(index == -1 || PlayerLives[index] == 0)
+			continue;
+		
+
+		if(ply.CurrentMeleeWeapon.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			if(ply.CurrentThrownItem.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Thrown);
+			if(ply.CurrentSecondaryWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Handgun);
+			if(ply.CurrentPrimaryWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Rifle);
+			continue;
+		}
+
+		if(ply.CurrentThrownItem.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			if(ply.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Melee);
+			if(ply.CurrentSecondaryWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Handgun);
+			if(ply.CurrentPrimaryWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Rifle);
+			continue;
+		}
+
+
+		if(ply.CurrentPrimaryWeapon.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			if(ply.CurrentThrownItem.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Thrown);
+			if(ply.CurrentSecondaryWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Handgun);
+			if(ply.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Melee);
+			continue;
+		}
+
+
+		if(ply.CurrentSecondaryWeapon.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			if(ply.CurrentThrownItem.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Thrown);
+			if(ply.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Melee);
+			if(ply.CurrentPrimaryWeapon.WeaponItem != WeaponItem.NONE)
+				ply.RemoveWeaponItemType(WeaponItemType.Rifle);
+			continue;
+		}
+		if(ply.IsDisabled)
+		{
+			ply.GiveWeaponItem(wpns[PlayerLives[index]-1]);
+			continue;
+		}
+		if(ply.CurrentThrownItem.WeaponItem == WeaponItem.NONE && ply.CurrentMeleeWeapon.WeaponItem == WeaponItem.NONE && ply.CurrentPrimaryWeapon.WeaponItem == WeaponItem.NONE && ply.CurrentSecondaryWeapon.WeaponItem == WeaponItem.NONE)
+			continue;
+
+		ply.RemoveWeaponItemType(WeaponItemType.Thrown);
+		ply.RemoveWeaponItemType(WeaponItemType.Melee);
+		ply.RemoveWeaponItemType(WeaponItemType.Rifle);
+		ply.RemoveWeaponItemType(WeaponItemType.Handgun);
+
+	}
+}
+
+public void GiveWeapon(TriggerArgs args)
+{
+	if(Gameover || NormalMode)
+		return;
+	foreach(int p in UniqueIds)
+	{
+		IPlayer ply = Game.GetPlayer(p);
+		if(ply == null || ply.IsDead)
+			continue;
+
+		int index = GetIndex(ply);
+		
+		if(!IsPlaying[index])
+			continue;
+
+		if(index == -1 || PlayerLives[index] == 0)
+			continue;
+		
+
+		if(ply.CurrentMeleeWeapon.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			continue;
+		}
+
+		if(ply.CurrentThrownItem.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			continue;
+		}
+
+
+		if(ply.CurrentPrimaryWeapon.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			continue;
+		}
+
+
+		if(ply.CurrentSecondaryWeapon.WeaponItem == wpns[PlayerLives[index]-1])
+		{
+			continue;
+		}
+
+		
+		//If they don't have either
+		if(ply.CurrentPrimaryWeapon.WeaponItem != WeaponItem.NONE)
+			ply.RemoveWeaponItemType(WeaponItemType.Rifle);
+		if(ply.CurrentSecondaryWeapon.WeaponItem != WeaponItem.NONE)
+			ply.RemoveWeaponItemType(WeaponItemType.Handgun);
+		if(ply.CurrentThrownItem.WeaponItem != WeaponItem.NONE)
+			ply.RemoveWeaponItemType(WeaponItemType.Thrown);
+		if(ply.CurrentMeleeWeapon.WeaponItem != WeaponItem.NONE)
+			ply.RemoveWeaponItemType(WeaponItemType.Melee);
+
+		ply.GiveWeaponItem(wpns[PlayerLives[index]-1]);
+	}
+}
+
+public int GetIndex(IPlayer ply) //Gets array index given a player
+{
+	int index = -1;
+	for(int x = 0; x < UniqueIds.Length; x++)
+	{
+		if(ply.UniqueId == UniqueIds[x])
+		{
+			index = x;
+			break;
+		}		
+	}
+	return index;
+}
+
+public void UpdateBoard()
+{
+	String popupmsg = "";
+	if(ShowSettings)
+		popupmsg += settings + "\n\n";
+	else
+		popupmsg += "\n\n\n\n\n";
+
+	popupmsg += "(" + sequence + ")\n";
+	popupmsg += "Player's lives left:\n";
+
+	int namePlace = 1;
+	foreach(int s in UniqueIds)
+	{
+		
+		int x = GetIndexById(s);
+
+		if(x == -1 || !IsPlaying[x]) continue;
+
+		int lives = PlayerLives[x] + 1;
+
+		if(namePlace == 1 || namePlace == 5)
+		{
+			popupmsg += "| ";
+		}
+		if(namePlace == 4)
+		{
+			popupmsg += Profiles[x].Name + ": " + PlayerLives[x] + " |\n";
+		}
+		else
+		{
+			popupmsg += Profiles[x].Name + ": " + PlayerLives[x] + " | ";
+		}
+		namePlace = namePlace + 1;
+	}
+	byte whitening = 95;
+	byte color = 241;
+	if(Blue)
+	{
+		Game.ShowPopupMessage(popupmsg,new Color(whitening,whitening,color));
+	}
+	else if(Red)
+	{
+		Game.ShowPopupMessage(popupmsg,new Color(color,whitening,whitening));
+	}
+	else if(Green)
+	{
+		Game.ShowPopupMessage(popupmsg,new Color(whitening,color,whitening));
+	}
+}
+
+public int GetIndexById(int id) //Gets array index given unique id
+{
+	int index = -1;
+	for(int i = 0; i < UniqueIds.Length; i++)
+	{
+		if(UniqueIds[i] == id)
+		{
+			index = i;
+			break;
+		}
+	}
+	return index;
+}
+
+public void KillCPUs()
+{
+	if(CPU1 != null)
+		CPU1.Remove();
+	if(CPU2 != null)
+		CPU2.Remove();
+}
+
+public void HideSettings(TriggerArgs args)
+{
+	ShowSettings = false;
+	UpdateBoard();
+}

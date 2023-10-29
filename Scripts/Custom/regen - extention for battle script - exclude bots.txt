@@ -1,0 +1,24 @@
+//Health Regenerator Mod made by Nguyen Hong Nam
+//PLEASE, IF YOU COPY ANY METHOD FROM HERE, BE SURE TO GIVE SOME CREDIT//
+//Attention, if you run this script on the Campaign or Survival mode, your enermy can regen health like you
+// mapmodes: versus, custom, campaign, survival
+int p_interval = 12000; //interval in miliseconds
+float p_life = 5.5f; //heath points you will get every time the timer triggers
+
+
+public void OnStartup(){
+IObjectTimerTrigger obj =(IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+obj.SetIntervalTime(p_interval);
+obj.SetRepeatCount(0);
+obj.SetScriptMethod("regen");
+obj.Trigger();
+}
+
+public void regen(TriggerArgs g){
+foreach(IPlayer o in Game.GetPlayers().Where(o => !o.IsDead && !o.IsBot)){
+if(!o.IsInMidAir || !o.IsRunning || !o.IsSprinting || !o.IsMeleeAttacking || !o.IsGrabbing || !o.IsCaughtByPlayerInGrab ||!o.IsCaughtByPlayerInDive ||!o.IsLedgeGrabbing){
+PlayerModifiers modify = o.GetModifiers();
+if(o.GetHealth() != 225){
+modify.CurrentHealth += p_life;
+o.SetModifiers(modify);
+}}}}
