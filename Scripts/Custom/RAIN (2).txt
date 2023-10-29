@@ -1,0 +1,120 @@
+/*    | Beta Fixed by Motto73 |
+  __  __                                          _     
+ |  \/  |      /\                                ( )    
+ | \  / |_ __ /  \   _ __  _   _  ___  _ __   ___|/ ___ 
+ | |\/| | '__/ /\ \ | '_ \| | | |/ _ \| '_ \ / _ \ / __|
+ | |  | | | / ____ \| | | | |_| | (_) | | | |  __/ \__ \
+ |_|  |_|_|/_/    \_\_| |_|\__, |\___/|_| |_|\___| |___/
+                            __/ |                       
+  _____       _          __|___/         _       _      
+ |  __ \     (_)        / ____|         (_)     | |     
+ | |__) |__ _ _ _ __   | (___   ___ _ __ _ _ __ | |_    
+ |  _  // _` | | '_ \   \___ \ / __| '__| | '_ \| __|   
+ | | \ \ (_| | | | | |  ____) | (__| |  | | |_) | |_    
+ |_|  \_\__,_|_|_| |_| |_____/ \___|_|  |_| .__/ \__|   
+                                          | |           
+                                          |_|        
+                             000      00
+                           0000000   0000
+              0      00  00000000000000000
+            0000 0  000000000000000000000000       0
+         000000000000000000000000000000000000000 000
+        0000000000000000000000000000000000000000000000
+    000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000
+              / / / / / / / / / / / / / / / /
+            / / / / / / / / / / / / / / /
+            / / / / / / / / / / / / / / /
+          / / / / / / / / / / / / / /
+          / / / / / / / / / / / / /
+        / / / / / / / / / / / /
+        / / / / / / / / / /
+
+         ...........RUN FOR YOUR LIVES!.
+
+*/
+
+// Settings vars
+// Stop the rain on gameover?
+bool stopOnGameOver = false;
+
+// Primary tick speed ratio,
+// affects the rain strenght
+int[] tickRand = { 200, 900 }; //already +500 int
+
+// Changes the 'rain stage' after
+// some rand time ratio, making it 
+// heavier or not
+int[] rainStageRand = { 3000, 5000 }; //already +5000 int
+
+// Drops life time, makes 
+// them disapear after
+// XXX miliseconds
+int dropsLifeTime = 999999;
+
+// Destroys or remove the
+// objects when they are
+// removed
+static bool destroyOnDeath = false;
+
+// Remove or not junk
+// objects
+bool removeJunk = false;
+
+// Sets the drops speed rand
+int[] rainDropsSpeed = { -10, 10 };
+
+// Sets the drop angular velocity
+// (only for objects, players wont be
+// affected)
+int[] rainDropsAngularSpeed = { -10, 10 };
+
+// Objects that will rain list
+// "PLAYER" is a special flag
+// to make a player rain
+// Remove the "//" in the line
+// to select which objects.
+// The last object MUST NOT HAVE
+// A COMMA IN THE END
+// as follow: array {
+//      "firsts",
+//      "last"    
+// }
+string[] rainDrops = {
+//"PLAYER",
+//    "BarrelExplosive",
+    "BarrelWreck",
+    "StoneDebris00A",
+    "StoneDebris00B",
+    "StoneDebris00C",
+    "StoneDebris00D",
+    "StoneDebris00E",
+    "MetalDebris00A",
+    "MetalDebris00B",
+    "MetalDebris00C",
+    "MetalDebris00D",
+    "MetalDebris00E",
+    "WoodDebris00A",
+    "WoodDebris00B",
+    "WoodDebris00C",
+    "WoodDebris00D",
+    "WoodDebris00E",
+    "ChairLeg",
+    "Chair00",
+    "PropaneTank",
+    "GlassShard00A",
+    "ItemPills",
+//    "WeaponMolotovThrown"
+};
+
+private static List<IProfile> pProfileList = new List<IProfile>(); private static List<Hit> hits = new List<Hit>(); private IObjectTimerTrigger tickTrigger; private IObjectTimerTrigger randomizeTimeTrigger; string[] blackList = { "CueStick00Debris", "Suitcase00Debris1", "Suitcase00Debris2", "LightSign00Debris1", "StoneDebris00A", "StoneDebris00B", "StoneDebris00C", "StoneDebris00D", "StoneDebris00E", "MetalDebris00A", "MetalDebris00B", "MetalDebris00C", "MetalDebris00D", "MetalDebris00E", "WoodBarrelDebris00A", "WoodBarrelDebris00B", "WoodBarrelDebris00C", "WoodDebris00A", "WoodDebris00B", "WoodDebris00C", "WoodDebris00D", "WoodDebris00E", "WoodDebrisTable00A", "WoodDebrisTable00B", "GlassShard00A", "AtlasStatue00_D", "Balloon00_D", "Monitor00_D", "CardboardBox00_D", "CrabCan00_D", "GasLamp00_D", "Cage00_D", "Duct00C_D", "CarnivalCart01_D", "Gargoyle00_D", "HangingLamp00_D", "Lamp00_D", "Lamp01_D", "MetalRailing00_D", "Padlock00_D", "Piano00_D", "Spotlight00A_D", "TinRoof00_D", "Trashcan00_D", "WindMillSail00_D", "WindMillSail00_D2", "WiringTube00A_D", "WoodAwning00B_D", "LightSign00E_D", "LightSign00H_D", "LightSign00L_D", "LightSign00O_D", "LightSign00T_D", "XmasTree_D", "Bottle00Broken", "Giblet00", "Giblet01", "Giblet02", "Giblet03", "Giblet04" }; Random rand = new Random(); const float DISTANCE_FROM_TOP = 100f; public void OnStartup() { foreach (IObjectPlayerProfileInfo pInfo in Game.GetObjectsByName("PlayerProfileInfo")) { pProfileList.Add(pInfo.GetProfile()); } foreach (IPlayer ply in Game.GetPlayers()) { pProfileList.Add(ply.GetProfile()); } tickTrigger = Utils.SetTimer("Tick", "", 0, rand.Next(tickRand[0], tickRand[1])); randomizeTimeTrigger = Utils.SetTimer("RandomizeDelay", "", rainStageRand[0], rainStageRand[1]); Utils.SetTimer("DeleteTash", "", 0, 20000); Utils.SetTimer("CheckHits", "", 0, 100); Utils.SendMessage("Welcome to rain script!"); Utils.SendMessage("Made by: MrAnyone."); Utils.SendMessage("Contact me at: m3rc3r99@gmail.com"); Utils.SendMessage("There are a LOT of settings you can setup."); }
+public void Tick(TriggerArgs args) { if (!(Game.IsGameOver && stopOnGameOver)) { SpawnDrop(rainDrops[rand.Next(0, rainDrops.Length)]); } }
+public void SpawnDrop(string name) { if (name == "PLAYER") { SpawnRandomPlayer(); } else { SpawnObject(name); } }
+public void RandomizeDelay(TriggerArgs args) { tickTrigger.SetIntervalTime(rand.Next(tickRand[0], tickRand[1])); randomizeTimeTrigger.SetIntervalTime(rand.Next(rainStageRand[0], rainStageRand[1])); }
+                          public void SpawnRandomPlayer() { IProfile cProfile = pProfileList[rand.Next(pProfileList.Count)]; IPlayer cPly = Game.CreatePlayer(new Vector2((float)rand.Next((int)Game.GetCameraArea().Left, (int)Game.GetCameraArea().Right), (int)Game.GetCameraMaxArea().Top + DISTANCE_FROM_TOP)); cPly.SetProfile(cProfile); cPly.SetLinearVelocity(new Vector2((float)rand.Next(rainDropsSpeed[0], rainDropsSpeed[1]), (float)rand.Next(rainDropsSpeed[0], rainDropsSpeed[1]))); cPly.Kill(); AddHit((IObject)cPly); }
+                          public void SpawnObject(string name) { IObject obj = Game.CreateObject(name, new Vector2((float)rand.Next((int)Game.GetCameraArea().Left, (int)Game.GetCameraArea().Right), (int)Game.GetCameraMaxArea().Top + DISTANCE_FROM_TOP), 0, new Vector2((float)rand.Next(rainDropsSpeed[0], rainDropsSpeed[1]), (float)rand.Next(rainDropsSpeed[0], rainDropsSpeed[1])), (float)rand.Next(rainDropsAngularSpeed[0], rainDropsAngularSpeed[1])); AddHit(obj); }
+public void AddHit(IObject obj) { hits.Add(new Hit(obj, dropsLifeTime)); }
+public void CheckHits(TriggerArgs args) { try { foreach (Hit hit in hits) { if (hit.MustDie()) { hit.Kill(); hits.Remove(hit); } } } catch (Exception e) { return; } }
+public void DeleteTash(TriggerArgs args) { if (removeJunk) { foreach (IObject obj in Game.GetObjectsByName(blackList)) { obj.Remove(); } } }
+private class Hit { private IObject obj; private float lifetime; private float controlTime; public Hit(IObject obj, float lifetime) { this.obj = obj; this.lifetime = Game.TotalElapsedGameTime + lifetime; this.controlTime = lifetime; } public bool MustDie() { if (Game.TotalElapsedGameTime - this.lifetime > this.controlTime) { return true; } else { return false; } } public void Kill() { if (destroyOnDeath) { this.obj.Destroy(); } else { this.obj.Remove(); } } }
+private class Utils { public static IObjectTimerTrigger SetTimer(string met, string id, int times, int delay) { IObjectTimerTrigger trigger = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger"); trigger.CustomId = id; trigger.SetScriptMethod(met); trigger.SetIntervalTime(delay); trigger.SetRepeatCount(times); trigger.Trigger(); return trigger; } public static void SendMessage(string msg) { Game.RunCommand("/MSG |RAIN MOD| " + msg); } }

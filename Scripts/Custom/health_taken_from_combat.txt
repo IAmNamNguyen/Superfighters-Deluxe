@@ -1,0 +1,24 @@
+//Health Regen Combat Mod made by Nguyen Hong Nam
+//PLEASE, IF YOU COPY ANY METHOD FROM HERE, BE SURE TO GIVE SOME CREDIT//
+// mapmodes: versus, custom, campaign, survival
+int p_interval = 1000; //interval in miliseconds
+float p_life = 0.5f; //heath points you will get every time the timer triggers
+
+
+public void OnStartup(){
+Game.RunCommand("/msg Script By Nam");
+IObjectTimerTrigger obj1 =(IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+obj1.SetIntervalTime(p_interval);
+obj1.SetRepeatCount(0);
+obj1.SetScriptMethod("combat");
+obj1.Trigger();
+}
+
+public void combat(TriggerArgs args){
+foreach(IPlayer o in Game.GetPlayers().Where(o => !o.IsDead)){
+if(o.IsGrabbing || o.IsMeleeAttacking && !o.IsBot || o.IsStrengthBoostActive){
+PlayerModifiers modify = o.GetModifiers();
+if(o.GetHealth() != 225){
+modify.CurrentHealth += p_life;
+o.SetModifiers(modify);
+}}}}

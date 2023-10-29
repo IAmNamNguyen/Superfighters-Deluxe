@@ -1,0 +1,11 @@
+//---No Gibzone script by Nam---//
+//---Feel free to use---//
+
+
+public void OnStartup(){
+IObject[] Obj = Game.GetObjectsByName(new string[]{
+"GibZone", "GibZoneClean"});
+foreach(IObject Object in Obj){
+Object.Remove();
+}
+}

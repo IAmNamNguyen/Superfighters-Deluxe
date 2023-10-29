@@ -1,0 +1,15 @@
+public void AfterStartup()
+{
+	foreach(IPlayer plr in Game.GetPlayers()) 
+	{
+		PlayerModifiers modifiers = plr.GetModifiers();
+modifiers.MaxHealth = 500;
+modifiers.CurrentHealth = 500;
+modifiers.MeleeForceModifier = 2.2f;
+//modifiers.RunSpeedModifier = 3.0f;
+//modifiers.SprintSpeedModifier = 6.0f;
+//modifiers.MeleeStunImmunity = 0;
+modifiers.ProjectileDamageDealtModifier = 1.5f;
+		plr.SetModifiers(modifiers);
+	}
+}

@@ -1,0 +1,49 @@
+//Healer script by Mr. No.42
+//Edited by Nam?
+// mapmodes: versus, custom, campaign, survival
+
+List <IPlayer> plyon = new List<IPlayer>();
+List <IPlayer> plyoff = new List<IPlayer>();
+public void OnStartup(){
+Game.RunCommand("/msg Script By No.42");
+foreach(IPlayer ply in Game.GetPlayers()){
+IObjectTimerTrigger Timer0 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer0.SetIntervalTime(1000);
+Timer0.SetRepeatCount(0);
+Timer0.SetScriptMethod("Crouching");
+Timer0.Trigger();
+IObjectTimerTrigger Timer1 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer1.SetIntervalTime(700);
+Timer1.SetRepeatCount(0);
+Timer1.SetScriptMethod("TakingCover");
+Timer1.Trigger();
+IObjectTimerTrigger Timer3 = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer3.SetIntervalTime(1000);
+Timer3.SetRepeatCount(0);
+Timer3.SetScriptMethod("Grabbing");
+Timer3.Trigger();
+}
+}
+
+//Recover HP When you are crouching
+public void Crouching(TriggerArgs args){
+	foreach(IPlayer ply in Game.GetPlayers()){
+	if(ply.IsCrouching && ply.IsIdle){
+	ply.SetHealth(ply.GetHealth()+1f);
+}
+}
+}
+
+//Recover HP When you are taking cover
+public void TakingCover(TriggerArgs args){
+	foreach(IPlayer ply in Game.GetPlayers()){
+	if(ply.IsTakingCover && ply.IsIdle){
+	ply.SetHealth(ply.GetHealth()+2f);
+}
+}
+}
+//Recover HP When you are grabbing
+public void Grabbing(TriggerArgs args){
+	foreach(IPlayer ply in Game.GetPlayers()){
+	if(ply.IsLedgeGrabbing){
+	ply.SetHealth(ply.GetHealth()+1f);}}} 

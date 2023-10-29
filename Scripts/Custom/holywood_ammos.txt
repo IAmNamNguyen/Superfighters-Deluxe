@@ -1,0 +1,168 @@
+/*
+ *===============================================================================================================
+ *============================================== Holywood ammos =================================================
+ *============================================== By Gwendalaze ==================================================
+ *===============================================================================================================
+ */
+
+
+const float BASE_RELOAD_RATE = 10000f; 
+//speed at which unclassified weapons reload (base 10000f)
+
+const int CLOCK_RATE = 100; 
+//speed of inner timer. Increase this value to reduce ping and accuracy (base : 100)
+
+static List<WeaponItemType> _supportedTypes = new List<WeaponItemType>(){WeaponItemType.Melee, WeaponItemType.Handgun, WeaponItemType.Rifle, WeaponItemType.Thrown};
+//weapon types that should supported by the script. Possibilities : Rifle, Handgun, Melee, Thrown
+
+/*
+ *===============================================================================================================
+ *========================================= Classes and variables ===============================================
+ *===============================================================================================================
+ */
+
+class PlayerData{
+	public IPlayer player{get; private set;}
+
+	public Dictionary<WeaponItemType,float> reloads {get; private set;}
+
+	public PlayerData(IPlayer ply){
+		this.player = ply;
+		this.reloads = new Dictionary<WeaponItemType,float>();
+		foreach(WeaponItemType t in _supportedTypes){
+			this.reloads.Add(t,0f);
+		}
+	}
+
+	public void checkReloads(){
+		if (_supportedTypes.Contains(WeaponItemType.Melee)){
+			this.checkMeleeReload();
+		}
+		if (_supportedTypes.Contains(WeaponItemType.Rifle)){
+			this.checkPrimaryReload();
+		}
+
+		if (_supportedTypes.Contains(WeaponItemType.Handgun)){
+			this.checkSecondaryReload();
+		}
+
+		if (_supportedTypes.Contains(WeaponItemType.Thrown)){
+			this.checkThrownReload();
+		}
+	}
+
+	public void checkReload(WeaponItemType t, WeaponItem weapon){
+			this.reloads[t] += CLOCK_RATE;
+			if (weapon != WeaponItem.NONE){
+				float reloadRate = (reloadRates.ContainsKey(weapon))?reloadRates[weapon]:BASE_RELOAD_RATE;
+				if (this.reloads[t] > reloadRate){
+					this.reloads[t] = 0f;
+					this.player.GiveWeaponItem(weapon);
+				}
+			}
+	}
+
+	public void checkMeleeReload(){
+		//give back melee weapon if the player is not blocking or attacking
+		WeaponItemType t = WeaponItemType.Melee;
+		WeaponItem weapon = this.player.CurrentMeleeWeapon.WeaponItem;
+		this.reloads[t] += CLOCK_RATE;
+			if (weapon != WeaponItem.NONE){
+				float reloadRate = (reloadRates.ContainsKey(weapon))?reloadRates[weapon]:BASE_RELOAD_RATE;
+				if (this.reloads[t] > reloadRate && !this.player.IsBlocking && !this.player.IsJumpAttacking && !this.player.IsMeleeAttacking){
+					this.reloads[t] = 0f;
+					this.player.GiveWeaponItem(weapon);
+				}
+			}
+	}
+
+	public void checkThrownReload(){
+			this.checkReload(WeaponItemType.Thrown, this.player.CurrentThrownItem.WeaponItem);
+	}
+
+	public void checkPrimaryReload(){
+			this.checkReload(WeaponItemType.Rifle, this.player.CurrentPrimaryWeapon.WeaponItem);
+	}
+
+	public void checkSecondaryReload(){
+			this.checkReload(WeaponItemType.Handgun, this.player.CurrentSecondaryWeapon.WeaponItem);
+	}
+}
+
+static Dictionary<WeaponItem,float> reloadRates = new Dictionary<WeaponItem,float>();
+
+List<PlayerData> datas = new List<PlayerData>();
+
+/*
+ *===============================================================================================================
+ *================================================ Methods ======================================================
+ *===============================================================================================================
+ */
+
+public void OnStartup(){
+	foreach (IPlayer ply in Game.GetPlayers()){
+		datas.Add(new PlayerData(ply));
+	}
+	initializeReloadRates();
+	createClock();
+}
+
+public void initializeReloadRates(){
+
+	//Melee
+	reloadRates.Add(WeaponItem.KATANA,12000f);
+	reloadRates.Add(WeaponItem.PIPE,6000f);
+	reloadRates.Add(WeaponItem.MACHETE,9000f);
+	reloadRates.Add(WeaponItem.BAT,9000f);
+	reloadRates.Add(WeaponItem.AXE,10000f);
+	reloadRates.Add(WeaponItem.HAMMER,6500f);
+	reloadRates.Add(WeaponItem.BATON,8000f);
+	reloadRates.Add(WeaponItem.KNIFE,7000f);
+	reloadRates.Add(WeaponItem.CHAIN,8000f);
+
+	//primaries
+	reloadRates.Add(WeaponItem.SHOTGUN,30000f);
+	reloadRates.Add(WeaponItem.TOMMYGUN,45000f);
+	reloadRates.Add(WeaponItem.M60,90000f);
+	reloadRates.Add(WeaponItem.SNIPER,40000f);
+	reloadRates.Add(WeaponItem.SAWED_OFF,25000f);
+	reloadRates.Add(WeaponItem.BAZOOKA,90000f);
+	reloadRates.Add(WeaponItem.ASSAULT,35000f);
+	reloadRates.Add(WeaponItem.CARBINE,20000f);
+	reloadRates.Add(WeaponItem.FLAMETHROWER,35000f);
+	reloadRates.Add(WeaponItem.GRENADE_LAUNCHER,90000f);
+	reloadRates.Add(WeaponItem.SMG,35000f);
+
+	//handguns
+	reloadRates.Add(WeaponItem.PISTOL,7500f);
+	reloadRates.Add(WeaponItem.SILENCEDPISTOL,11000f);
+	reloadRates.Add(WeaponItem.UZI,10000f);
+	reloadRates.Add(WeaponItem.SILENCEDUZI,15000f);
+	reloadRates.Add(WeaponItem.REVOLVER,7500f);
+	reloadRates.Add(WeaponItem.MAGNUM,22500f);
+	reloadRates.Add(WeaponItem.FLAREGUN,7500f);
+
+	//thrown
+	reloadRates.Add(WeaponItem.GRENADES,20000f);
+	reloadRates.Add(WeaponItem.MOLOTOVS,22000f);
+	reloadRates.Add(WeaponItem.MINES,25000f);
+}
+
+public void createClock(){
+	IObjectTimerTrigger clock = Game.CreateObject("TimerTrigger") as IObjectTimerTrigger;
+	clock.SetScriptMethod("clock");
+	clock.SetRepeatCount(0);
+	clock.SetIntervalTime(CLOCK_RATE);
+	clock.Trigger();
+}
+
+public void clock(TriggerArgs args){
+	for (int i = datas.Count -1; i >= 0; i--) {
+		PlayerData data = datas[i];
+		if (data.player.IsDead || data.player == null || data.player.IsRemoved){
+			datas.Remove(data);
+		} else {
+			data.checkReloads();
+		}
+	}
+}

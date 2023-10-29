@@ -1,0 +1,332 @@
+//==========BOT_SCRIPT_V_1.3=========//
+//============BY_ARMADYL5============//
+//===============ENJOY===============//
+
+
+private const bool FREE_MOVEMENT = true; // set to true to Enable The Bots to Move Freely When Not in Combat .
+
+private const bool ORDERS = true;  // set to false to Disable Orders .
+
+
+
+public void OnStartup(){
+IObjectTimerTrigger Timer = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+Timer.SetIntervalTime(300);
+Timer.SetRepeatCount(0);
+Timer.SetScriptMethod("BotBehaviour");
+Timer.Trigger();
+}
+
+
+
+
+//============(CODE)============//
+
+
+
+public void BotBehaviour(TriggerArgs args){
+foreach(IPlayer ply in Game.GetPlayers()){
+Vector2 Here = ply.GetWorldPosition();
+if(!ply.IsBurning && !ply.IsClimbing && ply.IsInMidAir){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartClimbUp,0));
+}
+if(FREE_MOVEMENT){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here + new Vector2(60*ply.FacingDirection,0),200));
+if((!ply.IsRunning || !ply.IsSprinting) && ply.IsIdle){
+Random rand = new Random();
+int randomNumber = rand.Next(2);
+if(randomNumber == 0){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+if(ply.IsManualAiming){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAim));
+}
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAttackRepeat));
+if((ply.CurrentPrimaryWeapon).WeaponItem != WeaponItem.NONE && (ply.CurrentPrimaryWeapon).TotalAmmo > 0 && ply.CurrentWeaponDrawn != WeaponItemType.Rifle && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.DrawRifle));
+}
+if((ply.CurrentPrimaryWeapon).WeaponItem == WeaponItem.NONE && (ply.CurrentSecondaryWeapon).WeaponItem != WeaponItem.NONE && (ply.CurrentSecondaryWeapon).TotalAmmo > 0 && ply.CurrentWeaponDrawn != WeaponItemType.Handgun && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.DrawHandgun));
+}
+IObject[] ObjectsP = Game.GetObjectsByName(new string[]{"WpnTommygun","WpnPumpShotgun","WpnSMG","WpnCarbine","WpnAssaultRifle"});
+foreach(IObject Object1 in ObjectsP){
+Vector2 Here1 = Object1.GetWorldPosition();
+if((ply.CurrentPrimaryWeapon).WeaponItem == WeaponItem.NONE && !ply.IsHoldingPlayerInGrab && (Here-Here1).Length() <= 80 && !ply.IsBurning){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here1));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.WaitDestinationReached));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Activate));
+}
+}
+IObject[] ObjectsS = Game.GetObjectsByName(new string[]{"WpnPistol","WpnRevolver","WpnUzi"});
+foreach(IObject Object1 in ObjectsS){
+Vector2 Here1 = Object1.GetWorldPosition();
+if((ply.CurrentSecondaryWeapon).WeaponItem == WeaponItem.NONE && !ply.IsHoldingPlayerInGrab && (Here-Here1).Length() <= 80 && !ply.IsBurning){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here1));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.WaitDestinationReached));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Activate));
+}
+}
+IObject[] ObjectsM = Game.GetObjectsByName(new string[]{"WpnKnife","WpnMachete","WpnAxe","WpnBat","WpnHammer","WpnPipeWrench"});
+foreach(IObject Object1 in ObjectsM){
+Vector2 Here1 = Object1.GetWorldPosition();
+if((ply.CurrentMeleeWeapon).WeaponItem == WeaponItem.NONE && !ply.IsHoldingPlayerInGrab && (Here-Here1).Length() <= 80 && !ply.IsBurning){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here1));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.WaitDestinationReached));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Activate));
+}
+}
+IObject[] ObjectsMS = Game.GetObjectsByName(new string[]{"Bottle00","Bottle00Broken","Chair00","CueStick00","CueStick00Shaft","FlapoleUS","Pillow00","Suitcase00","Teapot00","Trashbag00","Trashcan00Lid","ChairLeg"});
+foreach(IObject Object1 in ObjectsMS){
+Vector2 Here1 = Object1.GetWorldPosition();
+if((ply.CurrentMeleeMakeshiftWeapon).WeaponItem == WeaponItem.NONE && (ply.CurrentWeaponDrawn) == WeaponItemType.NONE && !ply.IsHoldingPlayerInGrab && (Here-Here1).Length() <= 80 && !ply.IsBurning){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here1));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.WaitDestinationReached));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Activate));
+}
+}
+foreach(IPlayer ply0 in Game.GetPlayers()){
+if(ply.UniqueID != ply0.UniqueID && (ply.GetTeam() != ply0.GetTeam() || ply0.GetTeam() == PlayerTeam.Independent) && !ply0.IsDead && !ply.IsHoldingPlayerInGrab && !ply.IsBurning){
+Vector2 Here0 = ply0.GetWorldPosition();
+if(ply.CurrentWeaponDrawn != WeaponItemType.Rifle && ply.CurrentWeaponDrawn != WeaponItemType.Handgun && ply.CurrentWeaponDrawn != WeaponItemType.Thrown && (Here-Here0).Length() <= 100 && (Here0-Here).Y <= 15 && (Here0-Here).Y >= -15){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here0,200));
+if((!ply.IsRunning || !ply.IsSprinting) && ply.IsIdle){
+Random rand = new Random();
+int randomNumber = rand.Next(2);
+if(randomNumber == 0){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+ply.AddCommand(new PlayerCommand(PlayerCommandType.WaitDestinationReached));
+Random rand0 = new Random();
+int randomNumber0 = rand0.Next(4);
+if(randomNumber0 == 0){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce));
+}
+if(randomNumber0 == 1){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce));
+}
+if(randomNumber0 == 2){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce));
+}
+if(randomNumber0 == 3){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Grab));
+}
+}
+if((Here-Here0).Length() <= 5){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Kick));
+}
+if((Here-Here0).Length() <= 15 && (ply0.IsMeleeAttacking || ply0.IsKicking) && ply.CurrentWeaponDrawn != WeaponItemType.Rifle && ply.CurrentWeaponDrawn != WeaponItemType.Handgun && ply.CurrentWeaponDrawn != WeaponItemType.Thrown){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Block));
+}
+if((ply.CurrentWeaponDrawn == WeaponItemType.Rifle && (ply.CurrentPrimaryWeapon).CurrentAmmo > 0 || ply.CurrentWeaponDrawn == WeaponItemType.Handgun && (ply.CurrentSecondaryWeapon).CurrentAmmo > 0) && (Here-Here0).Length() <= 100 && (Here-Here0).Y <= 50 && (Here-Here0).Y >= -50){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAim));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here0));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopMove));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartAimAt,Here0));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAim));
+}
+}
+}
+if((ply.CurrentPrimaryWeapon).WeaponItem == WeaponItem.NONE && (ply.CurrentSecondaryWeapon).WeaponItem == WeaponItem.NONE && (ply.CurrentMeleeWeapon).WeaponItem != WeaponItem.NONE && ply.CurrentWeaponDrawn != WeaponItemType.Melee && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.DrawMelee));
+}
+if((ply.CurrentPrimaryWeapon).WeaponItem != WeaponItem.NONE && (ply.CurrentPrimaryWeapon).TotalAmmo == 0 && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.DrawRifle));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAim));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Drop));
+}
+if((ply.CurrentSecondaryWeapon).WeaponItem != WeaponItem.NONE && (ply.CurrentSecondaryWeapon).TotalAmmo == 0 && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.DrawHandgun));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAim));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Drop));
+}
+if(ply.CurrentWeaponDrawn == WeaponItemType.Rifle && (ply.CurrentPrimaryWeapon).CurrentAmmo == 0 && (ply.CurrentPrimaryWeapon).TotalAmmo > 0 && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Reload));
+}
+if(ply.CurrentWeaponDrawn == WeaponItemType.Handgun && (ply.CurrentSecondaryWeapon).CurrentAmmo == 0 && (ply.CurrentSecondaryWeapon).TotalAmmo > 0 && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Reload));
+}
+if(ply.IsHoldingPlayerInGrab && ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Drop));
+}
+if(ply.IsBurning && !ply.IsHoldingPlayerInGrab){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopAim));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Roll));
+}
+if(ply.IsHoldingPlayerInGrab && !ply.IsBurning){
+ply.ClearCommandQueue();
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce,1));
+}
+if(randomNumber == 1){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Throw,1));
+}
+if(randomNumber == 2){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.AttackOnce,-1));
+}
+if(randomNumber == 3){
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Throw,-1));
+}
+}
+if(ply.IsTakingCover){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(ply.IsClimbing && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StopMove));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartClimbUp));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.WaitClimbReachedEnd));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here + new Vector2(ply.FacingDirection*60,0)));
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Run));
+}
+if(ply.IsClimbing && ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Fall));
+}
+if(ply.IsLedgeGrabbing && !ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(ply.IsLedgeGrabbing && ply.IsBurning){
+ply.ClearCommandQueue();
+ply.AddCommand(new PlayerCommand(PlayerCommandType.DropPlatform));
+}
+}
+if(ORDERS){
+foreach(IPlayer ply in Game.GetPlayers()){
+if(ply.IsUser && ply.IsMeleeAttacking || ply.IsUser && ply.IsBlocking || ply.IsUser && ply.IsManualAiming){
+Vector2 Here = ply.GetWorldPosition();
+Vector2 HereR = ply.GetWorldPosition() + new Vector2(60,0);
+Vector2 HereL = ply.GetWorldPosition() + new Vector2(-60,0);
+foreach(IPlayer ply0 in Game.GetPlayers()){
+if(ply0.IsBot && !ply0.IsManualAiming && !ply0.IsBurning){
+Vector2 Here0 = ply0.GetWorldPosition();
+if((HereR-Here0).Length() <= 60 && ply.FacingDirection == 1 && ply.GetTeam() == ply0.GetTeam() && ply0.GetTeam() != PlayerTeam.Independent && !ply0.IsDead){
+if(ply.IsMeleeAttacking && ply.IsWalking){
+ply0.ClearCommandQueue();
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here0 + new Vector2(ply.FacingDirection*60,0)));
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Run,200));
+if(!ply0.IsWalking && !ply0.IsRunning && !ply0.IsSprinting && !ply.IsTakingCover && ply.IsOnGround){
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(randomNumber == 1){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+if(ply.IsManualAiming && ply.IsWalking){
+ply0.ClearCommandQueue();
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here0 + new Vector2(ply.FacingDirection*60,0)));
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Run,200));
+if(!ply0.IsWalking && !ply0.IsRunning && !ply0.IsSprinting && !ply.IsTakingCover && ply.IsOnGround){
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(randomNumber == 1){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+if(ply.IsBlocking && ply.IsWalking){
+ply0.ClearCommandQueue();
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here));
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Run,200));
+if(!ply0.IsWalking && !ply0.IsRunning && !ply0.IsSprinting && !ply.IsTakingCover && ply.IsOnGround){
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(randomNumber == 1){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+}
+if((HereL-Here0).Length() <= 60 && ply.FacingDirection == -1 && ply.GetTeam() == ply0.GetTeam() && ply0.GetTeam() != PlayerTeam.Independent && !ply0.IsDead){
+if(ply.IsMeleeAttacking && ply.IsWalking){
+ply0.ClearCommandQueue();
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here0 + new Vector2(ply.FacingDirection*60,0)));
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Run,200));
+if(!ply0.IsWalking && !ply0.IsRunning && !ply0.IsSprinting && !ply.IsTakingCover && ply.IsOnGround){
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(randomNumber == 1){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+if(ply.IsManualAiming && ply.IsWalking){
+ply0.ClearCommandQueue();
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here0 + new Vector2(ply.FacingDirection*60,0)));
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Run,200));
+if(!ply0.IsWalking && !ply0.IsRunning && !ply0.IsSprinting && !ply.IsTakingCover && ply.IsOnGround){
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(randomNumber == 1){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+if(ply.IsBlocking && ply.IsWalking){
+ply0.ClearCommandQueue();
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.StartMoveToPosition,Here));
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Run,200));
+if(!ply0.IsWalking && !ply0.IsRunning && !ply0.IsSprinting && !ply.IsTakingCover && ply.IsOnGround){
+Random rand = new Random();
+int randomNumber = rand.Next(4);
+if(randomNumber == 0){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+if(randomNumber == 1){
+ply0.AddCommand(new PlayerCommand(PlayerCommandType.Jump));
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+
+
+
+//============(CODE)============//
+
+

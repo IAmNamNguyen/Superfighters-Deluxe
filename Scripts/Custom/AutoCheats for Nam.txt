@@ -1,0 +1,35 @@
+//AutoCheats for Nam (me) ^^
+//mapmodes: versus, custom, campaign, survival
+int p_interval = 100; //interval in miliseconds
+float p_life = 12f; //heath points you will get every time the timer triggers
+// hosting vars
+private IPlayer Nam = null;
+
+
+public void OnStartup(){
+IObjectTimerTrigger obj =(IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+obj.SetIntervalTime(p_interval);
+obj.SetRepeatCount(0);
+obj.SetScriptMethod("regenNam");
+obj.Trigger();
+}
+
+public void AfterStartup(){
+Game.RunCommand("/msg AutoCheats for Nam");
+}
+
+
+public void regenNam(TriggerArgs args){
+IPlayer Nam = Game.GetActiveUsers()[0].GetPlayer();
+if(!Nam.IsDead){
+PlayerModifiers modifiers = Nam.GetModifiers();
+if(Nam.GetHealth() != 225){
+modifiers.CurrentHealth += p_life;
+//modifiers.MeleeForceModifier = 2.2f;
+//modifiers.MeleeForceModifier = 10f;
+//if (Nam.CurrentSecondaryWeapon.WeaponItem == WeaponItem.MAGNUM)
+//		{
+//			modifiers.ProjectileDamageDealtModifier = 60f;
+//		}
+Nam.SetModifiers(modifiers);
+}}}

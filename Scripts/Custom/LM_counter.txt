@@ -1,0 +1,97 @@
+int[] menxd = {0, 1, 1, 1, 1};
+
+public void AfterStartup(){
+	if(Game.TimeLimitActive){
+		int time = (int)(Game.TimeLimit * 1000 * ((float)(Game.GetRemainingTimeLimit().Milliseconds)/1000f));
+		CreateTimer(time,1,"death","1");
+	}
+	CreateTimer(1000,0,"hp","0");
+	CreateTimer(5000,1,"count","2");
+}
+public void count(TriggerArgs args){
+	for(int i = 1; i <=4; i++){
+	int fags = 0;		
+		foreach (IPlayer ply in Game.GetPlayers()){
+			if (ply.GetTeam() == (PlayerTeam)(i)){
+				++fags;
+			}
+		}
+	menxd[i] = fags;
+	}
+}
+
+public void hp(TriggerArgs args){
+	List<string> assholes = new List<string>();
+	for(int i = 0; i <= 4; i++){
+		foreach (IPlayer ply in Game.GetPlayers()){
+			if (ply.GetTeam() == (PlayerTeam)(i) && i != 0 ){
+				string name = ply.GetProfile().Name;
+				double hp = Math.Round(ply.GetHealth());
+				if(hp != 0) assholes.Add(name + ":" + hp);
+			}
+			if (ply.GetTeam() == PlayerTeam.Independent && i == 0){
+				string name = ply.GetProfile().Name;
+				double hp = Math.Round(ply.GetHealth());
+				if(hp != 0) assholes.Add(name + ":" + hp);
+			}
+		}
+	}
+	string line = string.Join(",  ", assholes.ToArray());
+	Game.ShowPopupMessage(line);
+	
+}
+
+public void death(TriggerArgs args){
+	float LastAverage = 0;
+	int winning = 0;
+	float LastIndie = 0;
+	bool IndieWin = false;
+//	PlayerTeam[] team = {PlayerTeam.Team1, PlayerTeam.Team2, PlayerTeam.Team3, PlayerTeam.Team4};
+	for(int i = 4; i >=0; i--){
+		int id = 0;
+		float Average = 0;
+
+		foreach (IPlayer ply in Game.GetPlayers()){
+			if (ply.GetTeam() == (PlayerTeam)(i) && i != 0){
+				Average = (float)(Math.Round(Average + ply.GetHealth(), 10));
+			}
+			if (ply.GetTeam() == PlayerTeam.Independent && i == 0 && ply.GetHealth() > LastIndie){
+				LastIndie = ply.GetHealth();
+				id = ply.UserIdentifier;
+//				Game.RunCommand("/MSG indie " + LastIndie);
+			}
+		}
+		if (i != 0){
+//			Game.RunCommand("/msg fags " + menxd[i]);
+			Average = Average / menxd[i];
+		}
+		if (Average > LastAverage && i != 0){
+			LastAverage = Average;
+			winning = i;
+//			Game.RunCommand("/MSG We are " + LastAverage);
+		}else if (LastIndie > LastAverage){
+			LastAverage = LastIndie;
+			winning = id;
+			IndieWin = true;
+		}
+	}
+
+	foreach (IPlayer ply in Game.GetPlayers()){
+		if (ply.UserIdentifier != winning && IndieWin == true){
+			ply.Kill();
+		}
+		if (ply.GetTeam() != (PlayerTeam)(winning) && IndieWin == false){
+			ply.Kill();
+		}
+	}
+}
+
+
+public void CreateTimer(int interval, int count, string method, string id) {
+	IObjectTimerTrigger timerTrigger = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger"); 
+	timerTrigger.SetIntervalTime(interval);
+	timerTrigger.SetRepeatCount(count);
+	timerTrigger.SetScriptMethod(method);
+	timerTrigger.CustomId = id;
+	timerTrigger.Trigger();
+}

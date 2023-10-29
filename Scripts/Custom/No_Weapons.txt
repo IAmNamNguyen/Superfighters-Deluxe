@@ -1,0 +1,16 @@
+//=========NO_WEAPONS========//
+//=========BY_ARMADYL5=======//
+//===========ENJOY===========//
+
+
+// Feel Free To Use Any Script Or Method You Like //
+
+
+
+public void OnStartup(){
+IObject[] Obj = Game.GetObjectsByName(new string[]{
+"SpawnWeaponArea", "SpawnWeaponAreaCeiling"});
+foreach(IObject Object in Obj){
+Object.Remove();
+}
+}

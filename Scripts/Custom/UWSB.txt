@@ -1,0 +1,48 @@
+//description: Regenarate health when use strength boost made by  N.H.Nam (Beta v1.2)
+//PLEASE, IF YOU COPY ANY METHOD FROM HERE, BE  SURE TO GIVE SOME CREDIT//
+//This is beta version which only support host player only
+//Now support ALL  players in Beta v1.2, include bots
+// mapmodes: versus, custom, campaign, survival
+int p_interval = 1000; //interval in miliseconds
+float p_life = 9f; //heath points you will get every time the timer  triggers
+
+public void OnStartup(){
+//Game.RunCommand("/msg Ultimate Script By Nam");
+//Game.RunCommand("/msg Beta Version 1.2");
+IObjectTimerTrigger objregen = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+objregen.SetIntervalTime(p_interval);
+objregen.SetRepeatCount(0);
+objregen.SetScriptMethod("regenhealth");
+objregen.Trigger();
+//IObjectTimerTrigger objregenhost = (IObjectTimerTrigger)Game.CreateObject("TimerTrigger");
+//objregenhost.SetIntervalTime(p_interval);
+//objregenhost.SetRepeatCount(0);
+//objregenhost.SetScriptMethod("regenhealthhost");
+//objregenhost.Trigger();
+}
+
+public void regenhealth (TriggerArgs args){
+foreach(IPlayer o in Game.GetPlayers().Where(o => !o.IsDead)){
+if(o.IsStrengthBoostActive){
+PlayerModifiers modify = o.GetModifiers();
+if(o.GetHealth() != 225){
+modify.CurrentHealth += p_life;
+o.SetModifiers(modify);
+}}}}
+
+// hosting vars
+// private IPlayer hostPlayer = null;
+
+// public void regenhealthhost (TriggerArgs args){
+// IPlayer hostPlayer = Game.GetActiveUsers()[7].GetPlayer();
+// if(hostPlayer.IsStrengthBoostActive){
+// PlayerModifiers modify = hostPlayer.GetModifiers();
+// if(hostPlayer.GetHealth() != 225){
+// modify.CurrentHealth += p_life;
+// hostPlayer.SetModifiers(modify);
+// }}}
+
+//Beta log//
+//Created: 13 - 02 - 2021 - 8h40 P.M (v1.0)
+//UpdateBug: 18 - 02 - 2021 - 9h04 PM (v1.1)
+//UpdateScript: 04 - 03 - 2021 - 7h35 PM (v.1.2)
